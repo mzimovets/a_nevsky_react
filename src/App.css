@@ -1,3 +1,4 @@
+html, body{margin: 0; padding: 0%; overflow-x: hidden;}
 .App {
   text-align: center;
 }
@@ -35,4 +36,42 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+/* ________________________  Расписание*/ 
+/* Таблица */
+
+.schedule-table td {
+  padding: 4px;
+border: 1px #333 solid;
+  
+
+  
+}
+.schedule-table tr td:first-child{
+border-left: none;
+border-top: none;
+}
+
+.schedule-table tr td:last-child{
+  border-right: none;
+  border-top: none;
+  }
+
+  .schedule-table tr:last-child td{
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    }
+
+.schedule-table {
+  margin: 16px;
+  border-collapse: collapse;
+  border: none;
+}
+
+td {
+  width: 500px;
+  padding-top: 6px;
 }
