@@ -205,6 +205,7 @@ const Schedule = (props) => {
     });
 
     return monthName;
+
   };
 
   return (
