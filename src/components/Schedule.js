@@ -265,6 +265,8 @@ const Schedule = (props) => {
                   />
 
                   {/* день недели */}
+                  <div>{"число: " + element.dateWeek}</div>
+                  <div>{"месяц: " + element.month}</div>
                   <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
                   <div style={{ paddingLeft: "4px" }}>
                     {monthLiteral(element.month)}
@@ -272,7 +274,6 @@ const Schedule = (props) => {
                   <div style={{ paddingLeft: "4px" }}>
                     {dateNum(element.dateWeek)}
                   </div>
-                  <div>{monthLiteral}</div>
                 </div>
                 <TextArea
                   rows={4}
