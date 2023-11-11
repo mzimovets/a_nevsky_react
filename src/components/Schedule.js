@@ -139,31 +139,11 @@ const Schedule = (props) => {
       if (value === option.value) {
         monthName = option.label;
       }
+      return monthName;
     });
+  };
 
-    const monthLiteral = (value) => {
-    const options = [
-      { value: "1", label: "Январь" },
-      { value: "2", label: "Февраль" },
-      { value: "3", label: "Март" },
-      { value: "4", label: "Апрель" },
-      { value: "5", label: "Май" },
-      { value: "6", label: "Июнь" },
-      { value: "7", label: "Июль" },
-      { value: "8", label: "Август" },
-      { value: "9", label: "Сентябрь" },
-      { value: "10", label: "Октябрь" },
-      { value: "11", label: "Ноябрь" },
-      { value: "12", label: "Декабрь" },
-    ];
-    let monthName = "";
-    options.forEach((option) => {
-      if (value === option.value) {
-        monthName = option.label;
-      }
-    });
-
-    const dateNum = (value) => {
+  const dateNum = (value) => {
     const numbers = [
       { value: "1", label: "1" },
       { value: "2", label: "2" },
@@ -199,13 +179,11 @@ const Schedule = (props) => {
     ];
     let num = "";
     numbers.forEach((number) => {
-    if (value === number.value) {
-      num = number.label;
-    }
+      if (value === number.value) {
+        num = number.label;
+      }
+      return num;
     });
-
-    return monthName;
-
   };
 
   return (
@@ -291,6 +269,10 @@ const Schedule = (props) => {
                   <div style={{ paddingLeft: "4px" }}>
                     {monthLiteral(element.month)}
                   </div>
+                  <div style={{ paddingLeft: "4px" }}>
+                    {dateNum(element.dateWeek)}
+                  </div>
+                  <div>{monthLiteral}</div>
                 </div>
                 <TextArea
                   rows={4}
