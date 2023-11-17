@@ -26,6 +26,7 @@ function App() {
         <ThreeVar />
       </div>
       <Schedule />
+      <ButtonSave />
       <VityaTask />
     </div>
   );

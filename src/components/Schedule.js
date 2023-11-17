@@ -203,72 +203,84 @@ const Schedule = (props) => {
           style={{ width: "180px" }}
         />
       </div>
-      <table className="schedule-table">
-        <tr>
-          <td style={{ textAlign: "center" }}>День недели</td>
-          <td style={{ textAlign: "center" }}>Святые дня</td>
-        </tr>
-        {scheduleElements.map((element) => {
-          return (
-            <tr key={element.id}>
-              <td>
-                <div style={{ display: "flex" }}>
-                  {/* день недели */}
+      <div className="page">
+        <table className="schedule-table">
+          <tr>
+            <td style={{ textAlign: "center" }}>День недели</td>
+            <td style={{ textAlign: "center" }}>Святые дня</td>
+          </tr>
+          {scheduleElements.map((element) => {
+            return (
+              <tr key={element.id}>
+                <td>
+                  <div style={{ display: "flex" }}>
+                    {/* день недели */}
 
-                  <div style={{ paddingLeft: "4px" }}>
-                    {dateNum(element.dateWeek)}
-                  </div>
-                  <div style={{ paddingLeft: "4px" }}>
-                    {monthLiteral(element.month)}
-                  </div>
+                    <div style={{ paddingLeft: "4px" }}>
+                      {dateNum(element.dateWeek)}
+                    </div>
+                    <div style={{ paddingLeft: "4px" }}>
+                      {monthLiteral(element.month)}
+                    </div>
 
-                  <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
-                </div>
-                <div style={{ paddingBottom: "6px", paddingRight: "4px" }}>
-                  <TextArea
-                    rows={4}
-                    className="font-serif"
-                    placeholder="Укажите расписание"
-                    disabled={buttonEditState}
-                    onChange={(e) => {
-                      console.log(e.target.value);
-                      const newSchedule = [...scheduleElements];
-                      newSchedule.forEach((newElement) => {
-                        if (newElement.id === element.id) {
-                          newElement.prayerTimes = e.target.value;
-                        }
-                      });
-                      setScheduleElements(newSchedule);
-                    }}
-                  />
-                </div>
-              </td>
-              <td onClick={() => {}}>
-                {" "}
-                <div style={{ paddingBottom: "36px", paddingLeft: "4px" }}>
-                  <TextArea
-                    rows={4}
-                    className="font-serif"
-                    placeholder="Святые дня"
-                    value={element.saintsOfDay}
-                    disabled={buttonEditState}
-                    onChange={(e) => {
-                      console.log(e.target.value);
-                      const newSchedule = [...scheduleElements];
-                      newSchedule.forEach((newElement) => {
-                        if (newElement.id === element.id) {
-                          newElement.saintsOfDay = e.target.value;
-                        }
-                      });
-                      setScheduleElements(newSchedule);
-                    }}
-                  />
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-      </table>
+                    <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
+                  </div>
+                  <div style={{ paddingBottom: "6px", paddingRight: "4px" }}>
+                    {buttonEditState === false ? (
+                      <TextArea
+                        rows={4}
+                        className="font-serif"
+                        placeholder="Укажите расписание"
+                        value={element.prayerTimes}
+                        disabled={buttonEditState}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          const newSchedule = [...scheduleElements];
+                          newSchedule.forEach((newElement) => {
+                            if (newElement.id === element.id) {
+                              newElement.prayerTimes = e.target.value;
+                            }
+                          });
+                          setScheduleElements(newSchedule);
+                        }}
+                      />
+                    ) : (
+                      <div>{element.saintsOfDay}</div>
+                    )}
+                  </div>
+                </td>
+
+                <td onClick={() => {}}>
+                  {" "}
+                  <div style={{ paddingBottom: "36px", paddingLeft: "4px" }}>
+                    {buttonEditState === false ? (
+                      <TextArea
+                        rows={4}
+                        className="font-serif"
+                        placeholder="Святые дня"
+                        value={element.saintsOfDay}
+                        disabled={buttonEditState}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          const newSchedule = [...scheduleElements];
+                          newSchedule.forEach((newElement) => {
+                            if (newElement.id === element.id) {
+                              newElement.saintsOfDay = e.target.value;
+                            }
+                          });
+                          setScheduleElements(newSchedule);
+                        }}
+                      />
+                    ) : (
+                      <div>{element.saintsOfDay}</div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </table>
+      </div>
       <div style={{ paddingLeft: "20px" }}>
         <Button
           className="font-serif"

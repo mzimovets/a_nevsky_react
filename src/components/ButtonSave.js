@@ -1,8 +1,10 @@
 import React, { useCallback, useRef } from "react";
 import { toPng } from "html-to-image";
+import { Schedule } from "./Schedule";
+import { Button } from "antd";
 
-const App: React.FC = () => {
-  const ref = useRef < HTMLDivElement > null;
+const ButtonSave = () => {
+  const ref = useRef(null);
 
   const onButtonClick = useCallback(() => {
     if (ref.current === null) {
@@ -23,8 +25,12 @@ const App: React.FC = () => {
 
   return (
     <>
-      <div ref={ref}>{/* DOM nodes you want to convert to PNG */}</div>
-      <button onClick={onButtonClick}>Click me</button>
+      {<div ref={ref}>{<Schedule />}</div>}
+      <div style={{ paddingLeft: "20px" }}>
+        <Button className="font-serif" onClick={onButtonClick}>
+          Сохранить в png
+        </Button>
+      </div>
     </>
   );
 };
