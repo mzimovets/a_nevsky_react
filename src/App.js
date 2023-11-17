@@ -8,7 +8,8 @@ import { Cities } from "./components/Cities";
 import { Countries } from "./components/Countries";
 import { ThreeVar } from "./components/ThreeVar";
 import { Schedule } from "./components/Schedule";
-
+import { VityaTask } from "./components/VityaTask";
+import { ButtonSave } from "./components/ButtonSave";
 function App() {
   return (
     <div>
@@ -25,6 +26,7 @@ function App() {
         <ThreeVar />
       </div>
       <Schedule />
+      <VityaTask />
     </div>
   );
 }

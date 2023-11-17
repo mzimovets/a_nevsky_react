@@ -44,14 +44,21 @@ html, body{margin: 0; padding: 0%; overflow-x: hidden;}
 
 .schedule-table td {
   padding: 4px;
-border: 1px #333 solid;
-  
-
-  
+border: 1px #989898 solid; 
 }
+
+.schedule-table tr:nth-child(1) td:first-child {
+  border-top: none; /* Убирает верхнюю границу */
+}
+
 .schedule-table tr td:first-child{
 border-left: none;
 border-top: none;
+}
+
+
+.schedule-table tr:nth-child(1) td {
+  border-top: 1px #989898 solid;
 }
 
 .schedule-table tr td:last-child{
@@ -74,4 +81,11 @@ border-top: none;
 td {
   width: 500px;
   padding-top: 6px;
+}
+
+.font-serif {
+font-family: 'Source Serif 4', serif;}
+
+.datePicker {
+  font-family: 'Source Serif 4', serif;
 }

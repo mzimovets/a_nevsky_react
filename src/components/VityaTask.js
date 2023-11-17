@@ -1,23 +1,48 @@
 import { Button, Flex } from "antd";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const VityaTask = (props) => {
-  let displayNum = 50;
+  const [displayNum, setDisplayNum] = useState(0);
+  const [myStr, setMyStr] = useState("");
 
-  const buttonUp = () => {
-    const [buttonUpEditState, setButtonUpEditState] = useState(true);
-  };
-
+  console.log("myStr", myStr);
   return (
-    <Button
-      onClick={() => {
-        console.log("меня нажали", scheduleElements);
-        setButtonEditState(false);
-        if (buttonEditState === false) {
-          setButtonEditState(true);
-        }
-      }}
-    >
-      Увеличить число
-    </Button>
+    <div>
+      <div style={{ paddingTop: "20px" }}>
+        displayNum {displayNum} {myStr}
+      </div>
+
+      <Button
+        onClick={() => {
+          const upValue = 1 + displayNum;
+          setDisplayNum(upValue); //установка значения upValue в переменную displayNum
+
+          setMyStr(myStr + "B");
+        }}
+      >
+        Увеличить число
+      </Button>
+      <Button
+        onClick={() => {
+          const downValue = displayNum - 1;
+          setDisplayNum(downValue);
+          setMyStr(myStr + "И");
+        }}
+      >
+        Уменьшить число
+      </Button>
+      <Button
+        onClick={() => {
+          const nullValue = 0;
+          setDisplayNum(nullValue);
+          setMyStr(myStr + "Т");
+        }}
+      >
+        Сбросить
+      </Button>
+    </div>
   );
 };
+
+export { VityaTask };

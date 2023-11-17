@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import dayjs from "dayjs";
-import { Input, Button, DatePicker, Select } from "antd";
+import { Input, Button, DatePicker } from "antd";
+import locale from "antd/es/date-picker/locale/ru_RU";
+import "dayjs/locale/ru";
+import { toPng } from "html-to-image";
 
 const { TextArea } = Input;
 
@@ -121,39 +124,41 @@ const Schedule = (props) => {
 
   const monthLiteral = (value) => {
     const options = [
-      { value: "1", label: "Январь" },
-      { value: "2", label: "Февраль" },
-      { value: "3", label: "Март" },
-      { value: "4", label: "Апрель" },
-      { value: "5", label: "Май" },
-      { value: "6", label: "Июнь" },
-      { value: "7", label: "Июль" },
-      { value: "8", label: "Август" },
-      { value: "9", label: "Сентябрь" },
+      { value: "01", label: "Январь" },
+      { value: "02", label: "Февраль" },
+      { value: "03", label: "Март" },
+      { value: "04", label: "Апрель" },
+      { value: "05", label: "Май" },
+      { value: "06", label: "Июнь" },
+      { value: "07", label: "Июль" },
+      { value: "08", label: "Август" },
+      { value: "09", label: "Сентябрь" },
       { value: "10", label: "Октябрь" },
       { value: "11", label: "Ноябрь" },
       { value: "12", label: "Декабрь" },
     ];
     let monthName = "";
+    // console.log(typeof value);
     options.forEach((option) => {
+      // console.log("value option value", value, option.value);
       if (value === option.value) {
         monthName = option.label;
       }
-      return monthName;
     });
+    return monthName + " -";
   };
 
   const dateNum = (value) => {
     const numbers = [
-      { value: "1", label: "1" },
-      { value: "2", label: "2" },
-      { value: "3", label: "3" },
-      { value: "4", label: "4" },
-      { value: "5", label: "5" },
-      { value: "6", label: "6" },
-      { value: "7", label: "7" },
-      { value: "8", label: "8" },
-      { value: "9", label: "9" },
+      { value: "01", label: "1" },
+      { value: "02", label: "2" },
+      { value: "03", label: "3" },
+      { value: "04", label: "4" },
+      { value: "05", label: "5" },
+      { value: "06", label: "6" },
+      { value: "07", label: "7" },
+      { value: "08", label: "8" },
+      { value: "09", label: "9" },
       { value: "10", label: "10" },
       { value: "11", label: "11" },
       { value: "12", label: "12" },
@@ -178,17 +183,26 @@ const Schedule = (props) => {
       { value: "31", label: "31" },
     ];
     let num = "";
+    console.log("value", value, typeof value);
     numbers.forEach((number) => {
       if (value === number.value) {
         num = number.label;
       }
-      return num;
     });
+    return num;
   };
 
   return (
-    <div>
-      <DatePicker onChange={onChangeWeek} picker="week" />
+    <div className="font-serif">
+      <div style={{ paddingLeft: "20px", paddingTop: "24px" }}>
+        <DatePicker
+          locale={locale}
+          className="font-serif"
+          onChange={onChangeWeek}
+          picker="week"
+          style={{ width: "180px" }}
+        />
+      </div>
       <table className="schedule-table">
         <tr>
           <td style={{ textAlign: "center" }}>День недели</td>
@@ -199,133 +213,76 @@ const Schedule = (props) => {
             <tr key={element.id}>
               <td>
                 <div style={{ display: "flex" }}>
-                  <Select
-                    value={element.dateWeek}
-                    style={{ width: 60 }}
-                    disabled={true}
-                    onChange={(value) => {
-                      changeOnDateChange(value, element);
-                    }}
-                    options={[
-                      { value: "1", label: "1" },
-                      { value: "2", label: "2" },
-                      { value: "3", label: "3" },
-                      { value: "4", label: "4" },
-                      { value: "5", label: "5" },
-                      { value: "6", label: "6" },
-                      { value: "7", label: "7" },
-                      { value: "8", label: "8" },
-                      { value: "9", label: "9" },
-                      { value: "10", label: "10" },
-                      { value: "11", label: "11" },
-                      { value: "12", label: "12" },
-                      { value: "13", label: "13" },
-                      { value: "14", label: "14" },
-                      { value: "15", label: "15" },
-                      { value: "16", label: "16" },
-                      { value: "17", label: "17" },
-                      { value: "18", label: "18" },
-                      { value: "19", label: "19" },
-                      { value: "20", label: "20" },
-                      { value: "21", label: "21" },
-                      { value: "22", label: "22" },
-                      { value: "23", label: "23" },
-                      { value: "24", label: "24" },
-                      { value: "25", label: "25" },
-                      { value: "26", label: "26" },
-                      { value: "27", label: "27" },
-                      { value: "28", label: "28" },
-                      { value: "29", label: "29" },
-                      { value: "30", label: "30" },
-                      { value: "31", label: "31" },
-                    ]}
-                  />
-
-                  <Select
-                    value={element.month}
-                    style={{ width: 120 }}
-                    disabled={true}
-                    onChange={(value) => {
-                      changeOnMonthChange(value, element);
-                    }}
-                    options={[
-                      { value: "1", label: "Январь" },
-                      { value: "2", label: "Февраль" },
-                      { value: "3", label: "Март" },
-                      { value: "4", label: "Апрель" },
-                      { value: "5", label: "Май" },
-                      { value: "6", label: "Июнь" },
-                      { value: "7", label: "Июль" },
-                      { value: "8", label: "Август" },
-                      { value: "9", label: "Сентябрь" },
-                      { value: "10", label: "Октябрь" },
-                      { value: "11", label: "Ноябрь" },
-                      { value: "12", label: "Декабрь" },
-                    ]}
-                  />
-
                   {/* день недели */}
-                  <div>{"число: " + element.dateWeek}</div>
-                  <div>{"месяц: " + element.month}</div>
-                  <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
-                  <div style={{ paddingLeft: "4px" }}>
-                    {monthLiteral(element.month)}
-                  </div>
+
                   <div style={{ paddingLeft: "4px" }}>
                     {dateNum(element.dateWeek)}
                   </div>
+                  <div style={{ paddingLeft: "4px" }}>
+                    {monthLiteral(element.month)}
+                  </div>
+
+                  <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
                 </div>
-                <TextArea
-                  rows={4}
-                  placeholder="Укажите расписание"
-                  value={element.prayerTimes}
-                  disabled={buttonEditState}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    const newSchedule = [...scheduleElements];
-                    newSchedule.forEach((newElement) => {
-                      if (newElement.id === element.id) {
-                        newElement.prayerTimes = e.target.value;
-                      }
-                    });
-                    setScheduleElements(newSchedule);
-                  }}
-                />
+                <div style={{ paddingBottom: "6px", paddingRight: "4px" }}>
+                  <TextArea
+                    rows={4}
+                    className="font-serif"
+                    placeholder="Укажите расписание"
+                    disabled={buttonEditState}
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      const newSchedule = [...scheduleElements];
+                      newSchedule.forEach((newElement) => {
+                        if (newElement.id === element.id) {
+                          newElement.prayerTimes = e.target.value;
+                        }
+                      });
+                      setScheduleElements(newSchedule);
+                    }}
+                  />
+                </div>
               </td>
               <td onClick={() => {}}>
                 {" "}
-                <TextArea
-                  rows={4}
-                  placeholder="Святые дня"
-                  value={element.saintsOfDay}
-                  disabled={buttonEditState}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    const newSchedule = [...scheduleElements];
-                    newSchedule.forEach((newElement) => {
-                      if (newElement.id === element.id) {
-                        newElement.saintsOfDay = e.target.value;
-                      }
-                    });
-                    setScheduleElements(newSchedule);
-                  }}
-                />
+                <div style={{ paddingBottom: "36px", paddingLeft: "4px" }}>
+                  <TextArea
+                    rows={4}
+                    className="font-serif"
+                    placeholder="Святые дня"
+                    value={element.saintsOfDay}
+                    disabled={buttonEditState}
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      const newSchedule = [...scheduleElements];
+                      newSchedule.forEach((newElement) => {
+                        if (newElement.id === element.id) {
+                          newElement.saintsOfDay = e.target.value;
+                        }
+                      });
+                      setScheduleElements(newSchedule);
+                    }}
+                  />
+                </div>
               </td>
             </tr>
           );
         })}
       </table>
-      <Button
-        onClick={() => {
-          console.log("меня нажали", scheduleElements);
-          setButtonEditState(false);
-          if (buttonEditState === false) {
-            setButtonEditState(true);
-          }
-        }}
-      >
-        {buttonEditState === true ? "Редактировать" : "Сохранить"}
-      </Button>
+      <div style={{ paddingLeft: "20px" }}>
+        <Button
+          className="font-serif"
+          onClick={() => {
+            console.log("меня нажали", scheduleElements);
+            setButtonEditState(false);
+            if (buttonEditState === false) {
+              setButtonEditState(true);
+            }
+          }}
+        >
+          {buttonEditState === true ? "Редактировать" : "Сохранить"}
+        </Button>
+      </div>
     </div>
   );
 };
