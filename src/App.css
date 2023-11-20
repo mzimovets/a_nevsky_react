@@ -45,11 +45,7 @@ html, body{margin: 0; padding: 0%; overflow-x: hidden;}
 
 .schedule-table td {
   padding: 4px;
-border: 1px #989898 solid; 
-}
-
-.schedule-table tr:nth-child(1) td:first-child {
-  border-top: none; /* Убирает верхнюю границу */
+  border: 1px #989898 solid; 
 }
 
 .schedule-table tr td:first-child{
@@ -57,32 +53,36 @@ border-left: none;
 border-top: none;
 }
 
-
-.schedule-table tr:nth-child(1) td {
-  border-top: 1px #989898 solid;
+.schedule-table tr:nth-child(1) td:first-child {
+border: none;
 }
+
+.schedule-table tr:nth-child(1) td:last-child {
+  border: none;
+  }
 
 .schedule-table tr td:last-child{
   border-right: none;
   border-top: none;
   }
 
-  .schedule-table tr:last-child td{
-    border-right: none;
-    border-top: none;
-    border-bottom: none;
-    }
+.schedule-table tr:last-child td{
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  }
 
 .schedule-table {
   margin: 16px;
   border-collapse: collapse;
   border: none;
-  
+  position: absolute;
+  left: 80px;
+  top: 160px;
 }
 
 td {
-  width: 500px;
-  padding-top: 6px;
+  width: 350px;
 }
 
 .font-serif {
@@ -92,10 +92,8 @@ font-family: 'Source Serif 4', serif;}
   font-family: 'Source Serif 4', serif;
 }
 
-.page {
-  background-image: url(C:\Users\mzimo\OneDrive\Документы\a_nevsky_react\public\background.jpg);
-  max-width: 2480px;
-  width: 100%;
-  overflow: hidden;
-  height: 3580px;
+.f-img-block img {
+  object-fit: contain;
+  height: 1280px;
+  width: 911px;
 }

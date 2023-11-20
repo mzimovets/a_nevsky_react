@@ -203,10 +203,15 @@ const Schedule = (props) => {
           style={{ width: "180px" }}
         />
       </div>
-      <div className="page">
+      <div className="f-img-block">
+        <img src="background.jpg"></img>
         <table className="schedule-table">
           <tr>
-            <td style={{ textAlign: "center" }}>День недели</td>
+            <td
+              style={{ textAlign: "center", borderRight: "1px #989898 solid " }}
+            >
+              День недели
+            </td>
             <td style={{ textAlign: "center" }}>Святые дня</td>
           </tr>
           {scheduleElements.map((element) => {
@@ -245,7 +250,7 @@ const Schedule = (props) => {
                         }}
                       />
                     ) : (
-                      <div>{element.saintsOfDay}</div>
+                      <div>{element.prayerTimes}</div>
                     )}
                   </div>
                 </td>

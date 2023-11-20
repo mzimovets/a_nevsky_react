@@ -14,7 +14,7 @@ const ButtonSave = () => {
     toPng(ref.current, { cacheBust: true })
       .then((dataUrl) => {
         const link = document.createElement("a");
-        link.download = "my-image-name.png";
+        link.download = "Расписание на неделю.png";
         link.href = dataUrl;
         link.click();
       })

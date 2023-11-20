@@ -13,7 +13,7 @@ import { ButtonSave } from "./components/ButtonSave";
 function App() {
   return (
     <div>
-      <Nav />
+      {/* <Nav />
       <Banner />
       <div style={{ display: "flex" }}>
         <Spartak />
@@ -24,10 +24,8 @@ function App() {
         <Cities />
         <Countries />
         <ThreeVar />
-      </div>
-      <Schedule />
+      </div> */}
       <ButtonSave />
-      <VityaTask />
     </div>
   );
 }
