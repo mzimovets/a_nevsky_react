@@ -1,127 +1,10 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import dayjs from "dayjs";
-import { Input, Button, DatePicker } from "antd";
-import locale from "antd/es/date-picker/locale/ru_RU";
+import { Input } from "antd";
 import "dayjs/locale/ru";
-import { toPng } from "html-to-image";
+import parse from "html-react-parser";
 
 const { TextArea } = Input;
 
 const Schedule = (props) => {
-  const [buttonEditState, setButtonEditState] = useState(true);
-  const [scheduleElements, setScheduleElements] = useState([
-    {
-      id: "firstSunday",
-      dateWeek: "",
-      dayWeek: "Воскресенье",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "monday",
-      dateWeek: "",
-      dayWeek: "Понедельник",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "tuesday",
-      dateWeek: "",
-      dayWeek: "Вторник",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "wendsday",
-      dateWeek: "",
-      dayWeek: "Среда",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "thursday",
-      dateWeek: "",
-      dayWeek: "Четверг",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "friday",
-      dateWeek: "",
-      dayWeek: "Пятница",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "saturday",
-      dateWeek: "",
-      dayWeek: "Суббота",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-    {
-      id: "secondSunday",
-      dateWeek: "",
-      dayWeek: "Воскресенье",
-      month: "",
-      prayerTimes: "",
-      saintsOfDay: "",
-    },
-  ]);
-
-  const changeOnDateChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.dateWeek = value;
-      }
-    });
-    setScheduleElements(newSchedule);
-  };
-
-  const changeOnMonthChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.month = value;
-      }
-    });
-    setScheduleElements(newSchedule);
-  };
-
-  const onChangeWeek = (date, dateString) => {
-    const daysOfWeek = getWeekDays(date);
-    const newSchedule = scheduleElements.map((element, index) => {
-      element.dateWeek = daysOfWeek[index].day;
-      element.month = daysOfWeek[index].month;
-      return element;
-    });
-    setScheduleElements(newSchedule);
-  };
-
-  const getWeekDays = (value) => {
-    const startWeek = dayjs(value).startOf("week");
-    const days = [];
-    days.push({ day: startWeek.format("DD"), month: startWeek.format("MM") });
-    for (let i = 1; i < 8; i++) {
-      days.push({
-        day: startWeek.add(i, "day").format("DD"),
-        month: startWeek.add(i, "day").format("MM"),
-      });
-    }
-
-    return days;
-  };
-
   const monthLiteral = (value) => {
     const options = [
       { value: "01", label: "Январь" },
@@ -192,19 +75,32 @@ const Schedule = (props) => {
     return num;
   };
 
+  const paragraph = (prayerTimes) => {
+    console.log("prTime: ", prayerTimes);
+    const highlightedText = redHighlight(prayerTimes) || "";
+    const text = highlightedText.split("\n");
+    console.log(highlightedText);
+    console.log("text: ", text);
+    return text.map((newText) => {
+      return <p style={{ margin: "0px" }}>{parse(newText)}</p>;
+    });
+  };
+
+  const redHighlight = (text) => {
+    return text.replaceAll(new RegExp(/\*.+\*/g), (x, y, z) => {
+      console.log(x, y, z);
+      console.log("Нашли вот это", x);
+      const openSpan = `<span style = "color: #d40000fd">`;
+      const closeSpan = "</span>";
+      const xWithOpenSpan = x.replace("*", openSpan);
+      return xWithOpenSpan.replace("*", closeSpan);
+    });
+  };
+
   return (
     <div className="font-serif">
-      <div style={{ paddingLeft: "20px", paddingTop: "24px" }}>
-        <DatePicker
-          locale={locale}
-          className="font-serif"
-          onChange={onChangeWeek}
-          picker="week"
-          style={{ width: "180px" }}
-        />
-      </div>
       <div className="f-img-block">
-        <img src="background.jpg"></img>
+        <img src="an-schedule-bg.png"></img>
         <table className="schedule-table">
           <tr>
             <td
@@ -214,70 +110,95 @@ const Schedule = (props) => {
             </td>
             <td style={{ textAlign: "center" }}>Святые дня</td>
           </tr>
-          {scheduleElements.map((element) => {
+          {props.scheduleElements.map((element) => {
             return (
               <tr key={element.id}>
                 <td>
-                  <div style={{ display: "flex" }}>
-                    {/* день недели */}
-
-                    <div style={{ paddingLeft: "4px" }}>
-                      {dateNum(element.dateWeek)}
-                    </div>
+                  <div
+                    style={{
+                      paddingTop: "4px",
+                      display: "flex",
+                      color:
+                        element.dayWeek === "Воскресенье"
+                          ? "#d40000fd"
+                          : "black",
+                    }}
+                  >
+                    <div>{dateNum(element.dateWeek)}</div>
                     <div style={{ paddingLeft: "4px" }}>
                       {monthLiteral(element.month)}
                     </div>
-
                     <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
                   </div>
-                  <div style={{ paddingBottom: "6px", paddingRight: "4px" }}>
-                    {buttonEditState === false ? (
-                      <TextArea
-                        rows={4}
-                        className="font-serif"
-                        placeholder="Укажите расписание"
-                        value={element.prayerTimes}
-                        disabled={buttonEditState}
-                        onChange={(e) => {
-                          console.log(e.target.value);
-                          const newSchedule = [...scheduleElements];
-                          newSchedule.forEach((newElement) => {
-                            if (newElement.id === element.id) {
-                              newElement.prayerTimes = e.target.value;
-                            }
-                          });
-                          setScheduleElements(newSchedule);
-                        }}
-                      />
-                    ) : (
-                      <div>{element.prayerTimes}</div>
-                    )}
+                  <div>
+                    <div
+                      style={{
+                        paddingBottom: "6px",
+                        paddingRight: "4px",
+                        color:
+                          element.dayWeek === "Воскресенье"
+                            ? "#d40000fd"
+                            : "black",
+                      }}
+                    >
+                      {props.buttonEditState === false ? (
+                        <TextArea
+                          rows={4}
+                          className="font-text-area"
+                          placeholder="Укажите расписание"
+                          value={element.prayerTimes}
+                          disabled={props.buttonEditState}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            const newSchedule = [...props.scheduleElements];
+                            newSchedule.forEach((newElement) => {
+                              if (newElement.id === element.id) {
+                                newElement.prayerTimes = e.target.value;
+                              }
+                            });
+                            props.setScheduleElements(newSchedule);
+                          }}
+                        />
+                      ) : (
+                        <div>{paragraph(element.prayerTimes)}</div>
+                      )}
+                    </div>
                   </div>
                 </td>
 
                 <td onClick={() => {}}>
                   {" "}
-                  <div style={{ paddingBottom: "36px", paddingLeft: "4px" }}>
-                    {buttonEditState === false ? (
+                  <div>
+                    {props.buttonEditState === false ? (
                       <TextArea
                         rows={4}
-                        className="font-serif"
+                        className="font-text-area"
                         placeholder="Святые дня"
                         value={element.saintsOfDay}
-                        disabled={buttonEditState}
+                        disabled={props.buttonEditState}
                         onChange={(e) => {
                           console.log(e.target.value);
-                          const newSchedule = [...scheduleElements];
+                          const newSchedule = [...props.scheduleElements];
                           newSchedule.forEach((newElement) => {
                             if (newElement.id === element.id) {
                               newElement.saintsOfDay = e.target.value;
                             }
                           });
-                          setScheduleElements(newSchedule);
+                          props.setScheduleElements(newSchedule);
                         }}
                       />
                     ) : (
-                      <div>{element.saintsOfDay}</div>
+                      <div
+                        style={{
+                          textAlign: "center",
+                          color:
+                            element.dayWeek === "Воскресенье"
+                              ? "#d40000fd"
+                              : "black",
+                        }}
+                      >
+                        {paragraph(element.saintsOfDay)}
+                      </div>
                     )}
                   </div>
                 </td>
@@ -285,20 +206,6 @@ const Schedule = (props) => {
             );
           })}
         </table>
-      </div>
-      <div style={{ paddingLeft: "20px" }}>
-        <Button
-          className="font-serif"
-          onClick={() => {
-            console.log("меня нажали", scheduleElements);
-            setButtonEditState(false);
-            if (buttonEditState === false) {
-              setButtonEditState(true);
-            }
-          }}
-        >
-          {buttonEditState === true ? "Редактировать" : "Сохранить"}
-        </Button>
       </div>
     </div>
   );

@@ -77,19 +77,40 @@ border: none;
   border-collapse: collapse;
   border: none;
   position: absolute;
-  left: 80px;
-  top: 160px;
+  left: 60px;
+  top: 110px;
+  font-size: 20px;
 }
 
 td {
-  width: 350px;
+  width: 370px;
+  vertical-align: top;
+}
+
+@font-face {
+  font-family: Pompadur; /* Гарнитура шрифта */
+  src: url("C:\Users\mzimo\OneDrive\Документы\a_nevsky_react\public\BalkaraFreeCondensed.ttf"); /* Путь к файлу со шрифтом */
+  
 }
 
 .font-serif {
-font-family: 'Source Serif 4', serif;}
+font-family: 'Pompadur', serif;}
+
+.font-text-area {
+font-family: Font;
+}
 
 .datePicker {
-  font-family: 'Source Serif 4', serif;
+  font-family: 'Pompadur', serif;
+}
+
+.f-img-block {
+  background: transparent;
+  overflow: hidden;
+  width: 911px;
+  height: 1280px;
+  position: relative;
+
 }
 
 .f-img-block img {
@@ -97,3 +118,12 @@ font-family: 'Source Serif 4', serif;}
   height: 1280px;
   width: 911px;
 }
+
+@font-face {
+  font-family: Font; /* Гарнитура шрифта */
+  src: url("C:\Users\mzimo\OneDrive\Документы\a_nevsky_react\public\STIXGeneral-Regular.ttf"); /* Путь к файлу со шрифтом */
+ }
+
+ p {
+  font-family: Font;
+ }
