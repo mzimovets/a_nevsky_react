@@ -1,14 +1,4 @@
 import "./App.css";
-import { Nav } from "./components/Nav";
-import { Banner } from "./components/Banner";
-import { Spartak } from "./components/Spartak";
-import { Town } from "./components/Town";
-import { Surname } from "./components/Surname";
-import { Cities } from "./components/Cities";
-import { Countries } from "./components/Countries";
-import { ThreeVar } from "./components/ThreeVar";
-import { Schedule } from "./components/Schedule";
-import { VityaTask } from "./components/VityaTask";
 import { ButtonSave } from "./components/ButtonSave";
 import { useState, useEffect } from "react";
 import mqtt from "mqtt";
