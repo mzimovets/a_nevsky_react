@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import locale from "antd/es/date-picker/locale/ru_RU";
 import "dayjs/locale/ru";
 
-document.getElementsByTagName("an-schedule-bg.").ondragstart = function () {
+document.getElementsByTagName("background.jpg").ondragstart = function () {
   return false;
 };
 
@@ -154,19 +154,19 @@ const ButtonSave = () => {
           zIndex: "5",
         }}
       >
-        <div style={{ paddingLeft: "60px" }}>
+        <div style={{ paddingLeft: "40px" }}>
           <DatePicker
             locale={locale}
             className="font-serif"
             onChange={onChangeWeek}
             picker="week"
-            style={{ width: "180px" }}
+            style={{ width: "220px" }}
           />
         </div>
-        <div style={{ paddingLeft: "60px" }}>
+        <div style={{ paddingLeft: "40px" }}>
           <Button
             className="font-serif"
-            style={{ width: "180px" }}
+            style={{ width: "220px" }}
             onClick={() => {
               console.log("меня нажали", scheduleElements);
               setButtonEditState(false);
@@ -180,16 +180,35 @@ const ButtonSave = () => {
         </div>
         {!buttonEditState && (
           <div style={{ paddingLeft: "40px" }}>
-            <Button className="font-serif" style={{ width: "220px" }}>
+            <Button
+              className="font-serif"
+              style={{ width: "220px" }}
+              onClick={() => {
+                const newSchedule = scheduleElements.map((element, index) => {
+                  if (element.dayWeek === "Суббота") {
+                    element.prayerTimes =
+                      "08:00 - Литургия \n17:00 - Всенощное бдение";
+                  } else if (element.dayWeek === "Воскресенье") {
+                    element.prayerTimes =
+                      "07:00 - Ранняя Литургия \n10:00 - Поздняя Литургия \n17:00 - Вечернее богослужение";
+                  } else {
+                    element.prayerTimes =
+                      "08:00 - Литургия \n17:00 - Вечернее богослужение";
+                  }
+                  return element;
+                });
+                setScheduleElements(newSchedule);
+              }}
+            >
               Предзаполнить расписание
             </Button>
           </div>
         )}
-        <div style={{ paddingLeft: "60px" }}>
+        <div style={{ paddingLeft: "40px" }}>
           <Button
             className="font-serif"
             onClick={onButtonClick}
-            style={{ width: "180px" }}
+            style={{ width: "220px" }}
             disabled={buttonEditState === false}
           >
             Сохранить в png
@@ -199,7 +218,8 @@ const ButtonSave = () => {
       {
         <div
           style={{
-            width: "911px",
+            height: "1278px",
+            width: "904px",
             margin: "auto",
             boxShadow: "0 0 16px #333",
           }}

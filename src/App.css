@@ -89,7 +89,7 @@ td {
 
 @font-face {
   font-family: Pompadur; /* Гарнитура шрифта */
-  src: url("C:\Users\mzimo\OneDrive\Документы\a_nevsky_react\public\BalkaraFreeCondensed.ttf"); /* Путь к файлу со шрифтом */
+  src: url("/public/BalkaraFreeCondensed.ttf"); /* Путь к файлу со шрифтом */
   
 }
 
@@ -107,7 +107,7 @@ font-family: Font;
 .f-img-block {
   background: transparent;
   overflow: hidden;
-  width: 911px;
+  width: 904px;
   height: 1280px;
   position: relative;
 
@@ -115,13 +115,13 @@ font-family: Font;
 
 .f-img-block img {
   object-fit: contain;
-  height: 1280px;
-  width: 911px;
+  height: 1278px;
+  width: 904px;
 }
 
 @font-face {
   font-family: Font; /* Гарнитура шрифта */
-  src: url("C:\Users\mzimo\OneDrive\Документы\a_nevsky_react\public\STIXGeneral-Regular.ttf"); /* Путь к файлу со шрифтом */
+  src: url("/public/STIXGeneral-Regular.ttf"); /* Путь к файлу со шрифтом */
  }
 
  p {

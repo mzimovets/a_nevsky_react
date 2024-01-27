@@ -100,7 +100,7 @@ const Schedule = (props) => {
   return (
     <div className="font-serif">
       <div className="f-img-block">
-        <img src="an-schedule-bg.png"></img>
+        <img src="an-bg.png"></img>
         <table className="schedule-table">
           <tr>
             <td
@@ -128,7 +128,7 @@ const Schedule = (props) => {
                     <div style={{ paddingLeft: "4px" }}>
                       {monthLiteral(element.month)}
                     </div>
-                    <div style={{ paddingLeft: "4px" }}>{element.dayWeek}</div>
+                    <div style={{ paddingLeft: "10px" }}>{element.dayWeek}</div>
                   </div>
                   <div>
                     <div
