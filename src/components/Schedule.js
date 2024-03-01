@@ -78,7 +78,9 @@ const Schedule = (props) => {
   const paragraph = (prayerTimes) => {
     console.log("prTime: ", prayerTimes);
     const highlightedText = redHighlight(prayerTimes) || "";
-    const text = highlightedText.split("\n");
+    console.log("highlightedText", highlightedText)
+    const preparedBoldText = boldText(highlightedText) || "";
+    const text = preparedBoldText.split("\n");
     console.log(highlightedText);
     console.log("text: ", text);
     return text.map((newText) => {
@@ -90,18 +92,33 @@ const Schedule = (props) => {
     return text.replaceAll(new RegExp(/\*.+\*/g), (x, y, z) => {
       console.log(x, y, z);
       console.log("Нашли вот это", x);
-      const openSpan = `<span style = "color: #d40000fd">`;
+      const openSpan = `<span style = "color: #990b0bfd">`;
       const closeSpan = "</span>";
       const xWithOpenSpan = x.replace("*", openSpan);
       return xWithOpenSpan.replace("*", closeSpan);
     });
   };
 
+  const boldText = (text) => {
+    console.log("boldText", text)
+    return text.replaceAll(new RegExp(/\@.+\@/g), (x, y, z) => {
+      console.log("boldText", x, y, z)
+      console.log(x, y, z);
+      console.log("Нашли вот это", x);
+      const openSpan = `<b>`;
+      const closeSpan = "</b>";
+      const xWithOpenSpan = x.replace("@", openSpan);
+      const long = xWithOpenSpan.replace("@", closeSpan);
+      console.log("boldText", long)
+      return long
+    });
+  };
+
   return (
     <div className="font-serif">
       <div className="f-img-block">
-        <img src="an-bg.png"></img>
-        <table className="schedule-table">
+        <img src="background.png"></img>
+        <table className="schedule-table" style={{fontSize: props.fontSize}}>
           <tr>
             <td
               style={{ textAlign: "center", borderRight: "1px #989898 solid " }}
@@ -120,7 +137,7 @@ const Schedule = (props) => {
                       display: "flex",
                       color:
                         element.dayWeek === "Воскресенье"
-                          ? "#d40000fd"
+                          ? "#990b0bfd"
                           : "black",
                     }}
                   >
@@ -137,7 +154,7 @@ const Schedule = (props) => {
                         paddingRight: "4px",
                         color:
                           element.dayWeek === "Воскресенье"
-                            ? "#d40000fd"
+                            ? "#990b0bfd"
                             : "black",
                       }}
                     >
@@ -193,7 +210,7 @@ const Schedule = (props) => {
                           textAlign: "center",
                           color:
                             element.dayWeek === "Воскресенье"
-                              ? "#d40000fd"
+                              ? "#990b0bfd"
                               : "black",
                         }}
                       >

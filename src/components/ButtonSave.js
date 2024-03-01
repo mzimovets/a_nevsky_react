@@ -5,12 +5,19 @@ import { Button, DatePicker } from "antd";
 import dayjs from "dayjs";
 import locale from "antd/es/date-picker/locale/ru_RU";
 import "dayjs/locale/ru";
+import { Select, Space, Form } from "antd";
 
 document.getElementsByTagName("background.jpg").ondragstart = function () {
   return false;
 };
 
 const ButtonSave = () => {
+
+  const [fontSize, setFontSize] = useState("18px")
+
+  const handleChange = (value) => {
+    setFontSize(value)
+  };
   const ref = useRef(null);
 
   const onButtonClick = useCallback(() => {
@@ -18,7 +25,7 @@ const ButtonSave = () => {
       return;
     }
 
-    toPng(ref.current, { cacheBust: true })
+    toPng(ref.current, { cacheBust: true, pixelRatio: 2})
       .then((dataUrl) => {
         const link = document.createElement("a");
         link.download = "Расписание на неделю.png";
@@ -154,19 +161,19 @@ const ButtonSave = () => {
           zIndex: "5",
         }}
       >
-        <div style={{ paddingLeft: "40px" }}>
+        <div style={{ paddingLeft: "22px" }}>
           <DatePicker
             locale={locale}
             className="font-serif"
             onChange={onChangeWeek}
             picker="week"
-            style={{ width: "220px" }}
+            style={{ width: "220px", marginBottom: "6px"}}
           />
         </div>
-        <div style={{ paddingLeft: "40px" }}>
+        <div style={{ paddingLeft: "22px" }}>
           <Button
             className="font-serif"
-            style={{ width: "220px" }}
+            style={{ width: "220px", marginBottom: "6px"}}
             onClick={() => {
               console.log("меня нажали", scheduleElements);
               setButtonEditState(false);
@@ -179,7 +186,7 @@ const ButtonSave = () => {
           </Button>
         </div>
         {!buttonEditState && (
-          <div style={{ paddingLeft: "40px" }}>
+          <div style={{ paddingLeft: "22px" }}>
             <Button
               className="font-serif"
               style={{ width: "220px" }}
@@ -204,22 +211,67 @@ const ButtonSave = () => {
             </Button>
           </div>
         )}
-        <div style={{ paddingLeft: "40px" }}>
+        <div style={{ paddingLeft: "22px"}}>
+        <Form
+        layout="vertical">
+        <Form.Item style={{marginBottom: "6px"}}>
+          <div style={{display: "flex", alignItems: "center"}}>
+          <div className="font-serif" style={{ marginRight: "10px", paddingTop: "6px", paddingBottom: "6px", fontSize: "14px"}}>Размер шрифта:</div>
+          <Select
+            className="font-serif"
+            style={{ width: "103px" }}
+            value={fontSize}
+            onChange={handleChange}
+            options={[
+              {
+                value: "18px",
+                label: "18",
+              },
+              {
+                value: "19px",
+                label: "19",
+              },
+              {
+                value: "20px",
+                label: "20",
+              },
+              {
+                value: "21px",
+                label: "21",
+              },
+              {
+                value: "22px",
+                label: "22",
+              },
+              {
+                value: "23px",
+                label: "23",
+              },
+              {
+                value: "24px",
+                label: "24",
+              },
+            ]}
+          />
+          </div>
+          </Form.Item>
+          </Form>
+        </div>
+        <div style={{ paddingLeft: "22px" }}>
           <Button
             className="font-serif"
             onClick={onButtonClick}
             style={{ width: "220px" }}
             disabled={buttonEditState === false}
           >
-            Сохранить в png
+            Скачать
           </Button>
         </div>
       </div>
       {
         <div
           style={{
-            height: "1278px",
-            width: "904px",
+            width: "911px",
             margin: "auto",
             boxShadow: "0 0 16px #333",
           }}
@@ -227,6 +279,8 @@ const ButtonSave = () => {
           <div ref={ref}>
             {
               <Schedule
+
+                fontSize={fontSize}
                 scheduleElements={scheduleElements}
                 setScheduleElements={setScheduleElements}
                 buttonEditState={buttonEditState}

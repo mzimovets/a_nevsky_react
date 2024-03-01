@@ -73,28 +73,30 @@ border: none;
   }
 
 .schedule-table {
-  margin: 16px;
+  margin: 12px;
   border-collapse: collapse;
   border: none;
   position: absolute;
-  left: 60px;
-  top: 110px;
-  font-size: 20px;
+  left: 48px;
+  top: 128px;
+  /* font-size: 20px; */
 }
 
 td {
-  width: 370px;
+  width: 385px;
   vertical-align: top;
 }
 
 @font-face {
   font-family: Pompadur; /* Гарнитура шрифта */
-  src: url("/public/BalkaraFreeCondensed.ttf"); /* Путь к файлу со шрифтом */
+  src: url("/public/Izhitsa.ttf"); /* Путь к файлу со шрифтом */
   
 }
 
 .font-serif {
-font-family: 'Pompadur', serif;}
+font-family: 'Pompadur', serif;
+}
+
 
 .font-text-area {
 font-family: Font;
@@ -107,16 +109,16 @@ font-family: Font;
 .f-img-block {
   background: transparent;
   overflow: hidden;
-  width: 904px;
-  height: 1280px;
+  width: 911px;
+  height: 1288.414px;
   position: relative;
 
 }
 
 .f-img-block img {
   object-fit: contain;
-  height: 1278px;
-  width: 904px;
+  height: 1288.414px;
+  width: 911px;
 }
 
 @font-face {
