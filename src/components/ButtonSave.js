@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Schedule } from "./Schedule";
 import { Button, DatePicker } from "antd";
@@ -12,11 +12,20 @@ document.getElementsByTagName("background.jpg").ondragstart = function () {
 };
 
 const ButtonSave = () => {
-
-  const [fontSize, setFontSize] = useState("18px")
+  useEffect(() => {
+    fetch("/schedule")
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log("fetchedData", data);
+        setScheduleElements(data.data);
+      });
+  }, []);
+  const [fontSize, setFontSize] = useState("18px");
 
   const handleChange = (value) => {
-    setFontSize(value)
+    setFontSize(value);
   };
   const ref = useRef(null);
 
@@ -25,7 +34,7 @@ const ButtonSave = () => {
       return;
     }
 
-    toPng(ref.current, { cacheBust: true, pixelRatio: 2})
+    toPng(ref.current, { cacheBust: true, pixelRatio: 2 })
       .then((dataUrl) => {
         const link = document.createElement("a");
         link.download = "Расписание на неделю.png";
@@ -47,9 +56,7 @@ const ButtonSave = () => {
     setScheduleElements(newSchedule);
   };
 
-  // const [preFillButton, setPreFillButton] = useState(false); //----------->
-  const [buttonEditState, setButtonEditState] = useState(true);
-  const [scheduleElements, setScheduleElements] = useState([
+  const initialSchedule = [
     {
       id: "firstSunday",
       dateWeek: "",
@@ -114,7 +121,11 @@ const ButtonSave = () => {
       prayerTimes: "",
       saintsOfDay: "",
     },
-  ]);
+  ];
+
+  // const [preFillButton, setPreFillButton] = useState(false); //----------->
+  const [buttonEditState, setButtonEditState] = useState(true);
+  const [scheduleElements, setScheduleElements] = useState(initialSchedule);
 
   const changeOnDateChange = (value, element) => {
     const newSchedule = [...scheduleElements];
@@ -152,12 +163,21 @@ const ButtonSave = () => {
     return days;
   };
 
+  const saveSchedule = () => {
+    console.log("element", scheduleElements);
+    fetch("/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "*/*" },
+      body: JSON.stringify({ data: scheduleElements }),
+    });
+  };
+
   return (
     <>
       <div
         style={{
           paddingTop: "24px",
-          position: "absolute",
+          position: "fixed",
           zIndex: "5",
         }}
       >
@@ -167,17 +187,19 @@ const ButtonSave = () => {
             className="font-serif"
             onChange={onChangeWeek}
             picker="week"
-            style={{ width: "220px", marginBottom: "6px"}}
+            style={{ width: "220px", marginBottom: "6px" }}
           />
         </div>
         <div style={{ paddingLeft: "22px" }}>
           <Button
             className="font-serif"
-            style={{ width: "220px", marginBottom: "6px"}}
+            style={{ width: "220px", marginBottom: "6px" }}
             onClick={() => {
               console.log("меня нажали", scheduleElements);
               setButtonEditState(false);
               if (buttonEditState === false) {
+                //
+                saveSchedule();
                 setButtonEditState(true);
               }
             }}
@@ -186,7 +208,14 @@ const ButtonSave = () => {
           </Button>
         </div>
         {!buttonEditState && (
-          <div style={{ paddingLeft: "22px" }}>
+          <div
+            style={{
+              paddingLeft: "22px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+            }}
+          >
             <Button
               className="font-serif"
               style={{ width: "220px" }}
@@ -209,52 +238,70 @@ const ButtonSave = () => {
             >
               Предзаполнить расписание
             </Button>
+            <Button
+              className="font-serif"
+              style={{ width: "220px", marginBottom: "6px" }}
+              onClick={() => {
+                setScheduleElements(initialSchedule);
+              }}
+            >
+              Сбросить расписание
+            </Button>
           </div>
         )}
-        <div style={{ paddingLeft: "22px"}}>
-        <Form
-        layout="vertical">
-        <Form.Item style={{marginBottom: "6px"}}>
-          <div style={{display: "flex", alignItems: "center"}}>
-          <div className="font-serif" style={{ marginRight: "10px", paddingTop: "6px", paddingBottom: "6px", fontSize: "14px"}}>Размер шрифта:</div>
-          <Select
-            className="font-serif"
-            style={{ width: "103px" }}
-            value={fontSize}
-            onChange={handleChange}
-            options={[
-              {
-                value: "18px",
-                label: "18",
-              },
-              {
-                value: "19px",
-                label: "19",
-              },
-              {
-                value: "20px",
-                label: "20",
-              },
-              {
-                value: "21px",
-                label: "21",
-              },
-              {
-                value: "22px",
-                label: "22",
-              },
-              {
-                value: "23px",
-                label: "23",
-              },
-              {
-                value: "24px",
-                label: "24",
-              },
-            ]}
-          />
-          </div>
-          </Form.Item>
+        <div style={{ paddingLeft: "22px" }}>
+          <Form layout="vertical">
+            <Form.Item style={{ marginBottom: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div
+                  className="font-serif"
+                  style={{
+                    marginRight: "10px",
+                    paddingTop: "6px",
+                    paddingBottom: "6px",
+                    fontSize: "14px",
+                  }}
+                >
+                  Размер шрифта:
+                </div>
+                <Select
+                  className="font-serif"
+                  style={{ width: "103px" }}
+                  value={fontSize}
+                  onChange={handleChange}
+                  options={[
+                    {
+                      value: "18px",
+                      label: "18",
+                    },
+                    {
+                      value: "19px",
+                      label: "19",
+                    },
+                    {
+                      value: "20px",
+                      label: "20",
+                    },
+                    {
+                      value: "21px",
+                      label: "21",
+                    },
+                    {
+                      value: "22px",
+                      label: "22",
+                    },
+                    {
+                      value: "23px",
+                      label: "23",
+                    },
+                    {
+                      value: "24px",
+                      label: "24",
+                    },
+                  ]}
+                />
+              </div>
+            </Form.Item>
           </Form>
         </div>
         <div style={{ paddingLeft: "22px" }}>
@@ -279,7 +326,6 @@ const ButtonSave = () => {
           <div ref={ref}>
             {
               <Schedule
-
                 fontSize={fontSize}
                 scheduleElements={scheduleElements}
                 setScheduleElements={setScheduleElements}

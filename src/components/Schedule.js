@@ -7,18 +7,18 @@ const { TextArea } = Input;
 const Schedule = (props) => {
   const monthLiteral = (value) => {
     const options = [
-      { value: "01", label: "Январь" },
-      { value: "02", label: "Февраль" },
-      { value: "03", label: "Март" },
-      { value: "04", label: "Апрель" },
-      { value: "05", label: "Май" },
-      { value: "06", label: "Июнь" },
-      { value: "07", label: "Июль" },
-      { value: "08", label: "Август" },
-      { value: "09", label: "Сентябрь" },
-      { value: "10", label: "Октябрь" },
-      { value: "11", label: "Ноябрь" },
-      { value: "12", label: "Декабрь" },
+      { value: "01", label: "Января" },
+      { value: "02", label: "Февраля" },
+      { value: "03", label: "Мара" },
+      { value: "04", label: "Апреля" },
+      { value: "05", label: "Мая" },
+      { value: "06", label: "Июня" },
+      { value: "07", label: "Июля" },
+      { value: "08", label: "Августа" },
+      { value: "09", label: "Сентября" },
+      { value: "10", label: "Октября" },
+      { value: "11", label: "Ноября" },
+      { value: "12", label: "Декабря" },
     ];
     let monthName = "";
     // console.log(typeof value);
@@ -78,7 +78,7 @@ const Schedule = (props) => {
   const paragraph = (prayerTimes) => {
     console.log("prTime: ", prayerTimes);
     const highlightedText = redHighlight(prayerTimes) || "";
-    console.log("highlightedText", highlightedText)
+    console.log("highlightedText", highlightedText);
     const preparedBoldText = boldText(highlightedText) || "";
     const text = preparedBoldText.split("\n");
     console.log(highlightedText);
@@ -100,17 +100,17 @@ const Schedule = (props) => {
   };
 
   const boldText = (text) => {
-    console.log("boldText", text)
+    console.log("boldText", text);
     return text.replaceAll(new RegExp(/\@.+\@/g), (x, y, z) => {
-      console.log("boldText", x, y, z)
+      console.log("boldText", x, y, z);
       console.log(x, y, z);
       console.log("Нашли вот это", x);
       const openSpan = `<b>`;
       const closeSpan = "</b>";
       const xWithOpenSpan = x.replace("@", openSpan);
       const long = xWithOpenSpan.replace("@", closeSpan);
-      console.log("boldText", long)
-      return long
+      console.log("boldText", long);
+      return long;
     });
   };
 
@@ -118,7 +118,7 @@ const Schedule = (props) => {
     <div className="font-serif">
       <div className="f-img-block">
         <img src="background.png"></img>
-        <table className="schedule-table" style={{fontSize: props.fontSize}}>
+        <table className="schedule-table" style={{ fontSize: props.fontSize }}>
           <tr>
             <td
               style={{ textAlign: "center", borderRight: "1px #989898 solid " }}
@@ -127,7 +127,7 @@ const Schedule = (props) => {
             </td>
             <td style={{ textAlign: "center" }}>Святые дня</td>
           </tr>
-          {props.scheduleElements.map((element) => {
+          {props.scheduleElements?.map((element) => {
             return (
               <tr key={element.id}>
                 <td>
