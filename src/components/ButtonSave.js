@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Schedule } from "./Schedule";
+import { InfoModal } from "./InfoModal";
 import { Button, DatePicker } from "antd";
 import dayjs from "dayjs";
 import locale from "antd/es/date-picker/locale/ru_RU";
@@ -174,6 +175,16 @@ const ButtonSave = () => {
 
   return (
     <>
+      <div
+        style={{
+          position: "fixed",
+          zIndex: "5",
+          paddingTop: "12px",
+          right: "14px",
+        }}
+      >
+        <InfoModal />
+      </div>
       <div
         style={{
           paddingTop: "24px",
