@@ -1,6 +1,7 @@
 import { Input } from "antd";
 import "dayjs/locale/ru";
 import parse from "html-react-parser";
+import { Editor } from "./Editor";
 
 const { TextArea } = Input;
 
@@ -158,27 +159,19 @@ const Schedule = (props) => {
                             : "black",
                       }}
                     >
-                      {props.buttonEditState === false ? (
-                        <TextArea
-                          rows={4}
-                          className="font-text-area"
-                          placeholder="Укажите расписание"
-                          value={element.prayerTimes}
-                          disabled={props.buttonEditState}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            const newSchedule = [...props.scheduleElements];
-                            newSchedule.forEach((newElement) => {
-                              if (newElement.id === element.id) {
-                                newElement.prayerTimes = e.target.value;
-                              }
-                            });
-                            props.setScheduleElements(newSchedule);
-                          }}
-                        />
-                      ) : (
-                        <div>{paragraph(element.prayerTimes)}</div>
-                      )}
+                      <Editor
+                        value={element.prayerTimes}
+                        disabled={props.buttonEditState}
+                        onChange={(savedData) => {
+                          const newSchedule = [...props.scheduleElements];
+                          newSchedule.forEach((newElement) => {
+                            if (newElement.id === element.id) {
+                              newElement.prayerTimes = savedData;
+                            }
+                          });
+                          props.setScheduleElements(newSchedule);
+                        }}
+                      />
                     </div>
                   </div>
                 </td>
@@ -186,37 +179,19 @@ const Schedule = (props) => {
                 <td onClick={() => {}}>
                   {" "}
                   <div>
-                    {props.buttonEditState === false ? (
-                      <TextArea
-                        rows={4}
-                        className="font-text-area"
-                        placeholder="Святые дня"
-                        value={element.saintsOfDay}
-                        disabled={props.buttonEditState}
-                        onChange={(e) => {
-                          console.log(e.target.value);
-                          const newSchedule = [...props.scheduleElements];
-                          newSchedule.forEach((newElement) => {
-                            if (newElement.id === element.id) {
-                              newElement.saintsOfDay = e.target.value;
-                            }
-                          });
-                          props.setScheduleElements(newSchedule);
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          color:
-                            element.dayWeek === "Воскресенье"
-                              ? "#990b0bfd"
-                              : "black",
-                        }}
-                      >
-                        {paragraph(element.saintsOfDay)}
-                      </div>
-                    )}
+                    <Editor
+                      value={element.saintsOfDay}
+                      disabled={props.buttonEditState}
+                      onChange={(savedData) => {
+                        const newSchedule = [...props.scheduleElements];
+                        newSchedule.forEach((newElement) => {
+                          if (newElement.id === element.id) {
+                            newElement.saintsOfDay = savedData;
+                          }
+                        });
+                        props.setScheduleElements(newSchedule);
+                      }}
+                    />
                   </div>
                 </td>
               </tr>

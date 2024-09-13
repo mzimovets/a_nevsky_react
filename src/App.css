@@ -137,3 +137,10 @@ p {
 .ant-btn-primary:hover {
   background-color: rgb(57, 55, 69) !important;
 }
+
+/* editor.js */
+
+.codex-editor__redactor {
+  padding-bottom: 300px;
+  margin-right: 50px;
+}
