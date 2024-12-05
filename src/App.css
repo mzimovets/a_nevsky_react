@@ -141,6 +141,13 @@ p {
 /* editor.js */
 
 .codex-editor__redactor {
-  padding-bottom: 300px;
+  padding-bottom: 0px !important;
   margin-right: 50px;
 }
+
+.ce-paragraph.cdx-block {
+  padding: 2px 0;
+  grid-template-columns: ma
+}
+
+
