@@ -10,6 +10,20 @@ database.loadDatabase();
 
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import mammoth from "mammoth";
+
+import multer from "multer";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -53,3 +67,24 @@ app.post("/schedule", urlencodedParser, (req, res) => {
     }
   });
 });
+
+app.post("/upload", upload.single("docx"), function (req, res, next) {
+  const fileName = req.file.originalname;
+  setTimeout(() => {
+    mammoth
+      .convertToHtml({
+        path: __dirname + `/uploads/${fileName}`,
+      })
+      .then(function (result) {
+        var html = result.value; // The generated HTML
+        var messages = result.messages; // Any messages, such as warnings during conversion
+        res.send(html);
+        console.log("html", html);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }, 2000);
+});
+
+app.use("/uploads", express.static("uploads"));

@@ -1,11 +1,41 @@
-import { Modal, Flex, Form, Button } from "antd";
+import {
+  Modal,
+  Flex,
+  Form,
+  Button,
+  Segmented,
+  message,
+  Upload,
+  ConfigProvider,
+} from "antd";
 import React, { useState } from "react";
 import {
   InfoCircleOutlined,
   AimOutlined,
   CheckCircleOutlined,
   EditOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
+const { Dragger } = Upload;
+const props = {
+  name: "file",
+  multiple: true,
+  action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
+  onChange(info) {
+    const { status } = info.file;
+    if (status !== "загрузка") {
+      console.log(info.file, info.fileList);
+    }
+    if (status === "готово") {
+      message.success(`${info.file.name} файл успешно загружен`);
+    } else if (status === "ошибка") {
+      message.error(`${info.file.name} загрузка файла не удалась`);
+    }
+  },
+  onDrop(e) {
+    console.log("Dropped files", e.dataTransfer.files);
+  },
+};
 
 const InfoModal = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -29,6 +59,13 @@ const InfoModal = () => {
 
   return (
     <>
+      <Segmented
+        options={["Собор", "Владыка"]}
+        onChange={(value) => {
+          console.log(value); // string
+        }}
+        style={{ marginRight: "24px", fontFamily: "Pompadur" }}
+      />
       <Modal
         title={<div style={{ width: "242px" }}>Оформление текста</div>}
         open={isModalInfo}

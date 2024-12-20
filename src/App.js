@@ -2,6 +2,9 @@ import "./App.css";
 import { ButtonSave } from "./components/ButtonSave";
 import { useState, useEffect } from "react";
 import mqtt from "mqtt";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import News from "./components/news/News";
+import SchedulePeople from "./components/news/SchedulePeople";
 
 function App() {
   const [client, setClient] = useState(null);
@@ -11,14 +14,14 @@ function App() {
     setConnectStatus("Connecting");
     setClient(mqtt.connect(host, mqttOption));
   };
-  useEffect(() => {
-    mqttConnect({
-      host: "195.161.68.19",
-      port: 8888,
-      protocol: "ws",
-      clientId: "asdg1",
-    });
-  }, []);
+  // useEffect(() => {
+  //   mqttConnect({
+  //     host: "195.161.68.19",
+  //     port: 8888,
+  //     protocol: "ws",
+  //     clientId: "asdg1",
+  //   });
+  // }, []);
 
   useEffect(() => {
     // if (connectStatus !== "Connected") {
@@ -88,9 +91,13 @@ function App() {
   };
 
   return (
-    <div>
-      <ButtonSave />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<ButtonSave />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/schedule" element={<SchedulePeople />} />
+      </Routes>
+    </Router>
   );
 }
 

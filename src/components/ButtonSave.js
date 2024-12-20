@@ -2,14 +2,37 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Schedule } from "./Schedule";
 import { InfoModal } from "./InfoModal";
-import { Button, DatePicker } from "antd";
+import { Button, DatePicker, Upload, message, ConfigProvider } from "antd";
 import dayjs from "dayjs";
 import locale from "antd/es/date-picker/locale/ru_RU";
 import "dayjs/locale/ru";
 import { Select, Space, Form } from "antd";
+import { InboxOutlined } from "@ant-design/icons";
+import Tiptap from "./Tiptap.tsx";
 
 document.getElementsByTagName("background.jpg").ondragstart = function () {
   return false;
+};
+
+const { Dragger } = Upload;
+const props = {
+  name: "file",
+  multiple: true,
+  action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
+  onChange(info) {
+    const { status } = info.file;
+    if (status !== "загрузка") {
+      console.log(info.file, info.fileList);
+    }
+    if (status === "готово") {
+      message.success(`${info.file.name} файл успешно загружен`);
+    } else if (status === "ошибка") {
+      message.error(`${info.file.name} загрузка файла не удалась`);
+    }
+  },
+  onDrop(e) {
+    console.log("Dropped files", e.dataTransfer.files);
+  },
 };
 
 const ButtonSave = () => {
@@ -233,14 +256,18 @@ const ButtonSave = () => {
               onClick={() => {
                 const newSchedule = scheduleElements.map((element, index) => {
                   if (element.dayWeek === "Суббота") {
-                    element.prayerTimes =
-                      "08:00 - Литургия \n17:00 - Всенощное бдение";
+                    element.prayerTimes = `
+                    <p>08:00 - Литургия</p>
+                    <p>17:00 - Всенощное бдение</p>`;
                   } else if (element.dayWeek === "Воскресенье") {
-                    element.prayerTimes =
-                      "07:00 - Ранняя Литургия \n10:00 - Поздняя Литургия \n17:00 - Вечернее богослужение";
+                    element.prayerTimes = `
+                      <p>07:00 – Ранняя Литургия</p>
+                      <p>10:00 - Поздняя Литургия</p>
+                      <p>17:00 - Вечернее богослужение</p>`;
                   } else {
-                    element.prayerTimes =
-                      "08:00 - Литургия \n17:00 - Вечернее богослужение";
+                    element.prayerTimes = `
+                      <p>08:00 - Литургия</p>
+                      <p>17:00 - Вечернее богослужение</p>`;
                   }
                   return element;
                 });
@@ -315,16 +342,44 @@ const ButtonSave = () => {
             </Form.Item>
           </Form>
         </div>
+
+        {/* <form
+          style={{ marginBottom: "6px" }}
+          action="/upload"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <input type="file" name="docx" />
+          <input type="submit" onClick={(e) => {}} />
+        </form> */}
+
         <div style={{ paddingLeft: "22px" }}>
           <Button
             className="font-serif"
             onClick={onButtonClick}
-            style={{ width: "220px" }}
+            style={{ width: "220px", marginBottom: "10px" }}
             disabled={buttonEditState === false}
           >
             Скачать
           </Button>
         </div>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimaryHover: "rgb(149, 94, 74)",
+            },
+          }}
+        >
+          <Dragger {...props} style={{ marginLeft: "22px", width: "220px" }}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{ color: "rgb(149, 94, 74)" }} />
+            </p>
+            <p className="ant-upload-text" style={{ fontFamily: "Pompadur" }}>
+              Нажмите или перетащите документ в эту область для загрузки
+            </p>
+          </Dragger>
+        </ConfigProvider>
+        <Tiptap />
       </div>
       {
         <div

@@ -1,6 +1,7 @@
 import { Input } from "antd";
 import "dayjs/locale/ru";
 import parse from "html-react-parser";
+import Tiptap from "./Tiptap.tsx";
 
 const { TextArea } = Input;
 
@@ -128,6 +129,7 @@ const Schedule = (props) => {
             <td style={{ textAlign: "center" }}>Святые дня</td>
           </tr>
           {props.scheduleElements?.map((element) => {
+            console.log("times: ", element.prayerTimes);
             return (
               <tr key={element.id}>
                 <td>
@@ -159,18 +161,16 @@ const Schedule = (props) => {
                       }}
                     >
                       {props.buttonEditState === false ? (
-                        <TextArea
-                          rows={4}
-                          className="font-text-area"
-                          placeholder="Укажите расписание"
-                          value={element.prayerTimes}
-                          disabled={props.buttonEditState}
-                          onChange={(e) => {
-                            console.log(e.target.value);
+                        // <TextArea
+                        <Tiptap
+                          content={`<p>${element.prayerTimes}</p>`}
+                          // disabled={props.buttonEditState}
+                          onChange={(value) => {
+                            console.log("sdfsdf", value);
                             const newSchedule = [...props.scheduleElements];
                             newSchedule.forEach((newElement) => {
                               if (newElement.id === element.id) {
-                                newElement.prayerTimes = e.target.value;
+                                newElement.prayerTimes = value;
                               }
                             });
                             props.setScheduleElements(newSchedule);
@@ -187,18 +187,14 @@ const Schedule = (props) => {
                   {" "}
                   <div>
                     {props.buttonEditState === false ? (
-                      <TextArea
-                        rows={4}
-                        className="font-text-area"
-                        placeholder="Святые дня"
-                        value={element.saintsOfDay}
-                        disabled={props.buttonEditState}
-                        onChange={(e) => {
-                          console.log(e.target.value);
+                      <Tiptap
+                        content={`<p>${element.saintsOfDay}</p>`}
+                        // disabled={props.buttonEditState}
+                        onChange={(value) => {
                           const newSchedule = [...props.scheduleElements];
                           newSchedule.forEach((newElement) => {
                             if (newElement.id === element.id) {
-                              newElement.saintsOfDay = e.target.value;
+                              newElement.saintsOfDay = value;
                             }
                           });
                           props.setScheduleElements(newSchedule);

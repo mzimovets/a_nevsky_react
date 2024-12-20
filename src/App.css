@@ -137,3 +137,97 @@ p {
 .ant-btn-primary:hover {
   background-color: rgb(57, 55, 69) !important;
 }
+
+.ant-upload-list-item.ant-upload-list-item-error {
+  margin-left: 22px;
+}
+
+.ant-upload-list-item-uploading {
+  margin-left: 22px;
+}
+
+/* color picker */
+
+#swatch {
+  background: white;
+  box-shadow: 1em 1em 1em rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+#swatch .info {
+  padding: 1em;
+}
+
+#swatch h1 {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+#swatch h2 {
+  font-weight: normal;
+  margin: 0;
+}
+
+input[type="color"] {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  height: 3em; /* Reduced size */
+  width: 3em; /* Reduced size */
+  border-radius: 50%; /* Makes the input circular */
+}
+
+*:focus {
+  outline: none;
+}
+
+::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%; /* Ensures circle inside WebKit browsers */
+}
+
+::-moz-color-swatch {
+  border: 0;
+}
+
+/* bubbleMenu */
+.bubbleMenu {
+  background: white;
+  border: 1px solid rgba(200, 200, 200, 0.8); /* Light gray border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06); /* Soft shadow */
+  padding: 0.5em 1em;
+  display: flex;
+  gap: 0.5em; /* Space between menu items */
+  align-items: center;
+  width: auto; /* Автоматическая ширина */
+  max-width: 100%; /* Ограничение ширины (необязательно) */
+}
+
+.bubbleMenu select {
+  margin: 0 5px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+p {
+  margin: 0px;
+}
+
+.divider {
+  border-left: 1px solid rgba(200, 200, 200, 0.8);
+  height: 23px;
+}
+
+/* Avatar.js */
+
+/* News.js */
