@@ -8,7 +8,6 @@ import locale from "antd/es/date-picker/locale/ru_RU";
 import "dayjs/locale/ru";
 import { Select, Space, Form } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
-import Tiptap from "./Tiptap.tsx";
 
 document.getElementsByTagName("background.jpg").ondragstart = function () {
   return false;
@@ -257,7 +256,7 @@ const ButtonSave = () => {
                 const newSchedule = scheduleElements.map((element, index) => {
                   if (element.dayWeek === "Суббота") {
                     element.prayerTimes = `
-                    <p>08:00 - Литургия</p>
+                    <p>08:00 – Литургия</p>
                     <p>17:00 - Всенощное бдение</p>`;
                   } else if (element.dayWeek === "Воскресенье") {
                     element.prayerTimes = `
@@ -379,7 +378,6 @@ const ButtonSave = () => {
             </p>
           </Dragger>
         </ConfigProvider>
-        <Tiptap />
       </div>
       {
         <div

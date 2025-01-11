@@ -152,7 +152,6 @@ const Schedule = (props) => {
                   <div>
                     <div
                       style={{
-                        paddingBottom: "6px",
                         paddingRight: "4px",
                         color:
                           element.dayWeek === "Воскресенье"

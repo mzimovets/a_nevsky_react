@@ -233,29 +233,6 @@ const Tiptap = (props: IProps) => {
           </div>
         )}
         <div className="divider"></div>
-        {/* выравнивание */}
-        <AlignLeftOutlined
-          style={{ color: "black" }}
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          // disabled={!editor.can().setTextAlign("left")}
-        />
-        <AlignCenterOutlined
-          style={{ color: "black" }}
-          rotate="180"
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          // disabled={!editor.can().setTextAlign("center")}
-        />
-        <AlignRightOutlined
-          style={{ color: "black" }}
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          // disabled={!editor.can().setTextAlign("right")}
-        />
-        {/* <button
-          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-          // disabled={!editor.can().setTextAlign("justify")}
-        >
-          По ширине
-        </button> */}
       </BubbleMenu>
       <EditorContent editor={editor} />
     </>
