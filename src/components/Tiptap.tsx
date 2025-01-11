@@ -8,7 +8,7 @@ import {
   FontColorsOutlined,
 } from "@ant-design/icons";
 import { Select, Popover } from "antd";
-import { React, useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import Bold from "@tiptap/extension-bold";
 import Document from "@tiptap/extension-document";
@@ -65,22 +65,22 @@ const Tiptap = (props: IProps) => {
 
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        !event.target.closest(".bubbleMenu")
-      ) {
-        editor.commands.blur(); // Закрыть bubbleMenu
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (
+  //       menuRef.current &&
+  //       !menuRef.current.contains(event.target) &&
+  //       !event.target.closest(".bubbleMenu")
+  //     ) {
+  //       editor.commands.blur(); // Закрыть bubbleMenu
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [editor]);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [editor]);
 
   const predefinedColors = [
     "rgba(0, 0, 0, 0.992)",
