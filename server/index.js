@@ -73,15 +73,86 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
   const fileName = req.file.originalname;
 
   docxParser.parseDocx(__dirname + `/uploads/${fileName}`, function (data) {
-    // console.log(data);
+    let trimmed = data.replace(/Расписание (.+\n){0,4}Святые дня/gm, "");
+    trimmed = trimmed.replace(/\r\n\n\n/g, "");
+    const dateArray = trimmed.match(/\d+\s.+г\./g);
 
-    const trimmed = data.replace(
-      "Расписание Богослужений\nв Александр-Невском кафедральном соборе\nДень недели, устав\nСвятые дня",
-      ""
-    );
-    const ar = trimmed.split(/\d\s.+г\./);
-    console.log("trimmed", trimmed, ar);
-    res.json({ text: trimmed });
+    const ar = trimmed.split(/\d+\s.+г\./g);
+
+    const ids = [
+      "firstSunday",
+      "monday",
+      "tuesday",
+      "wendsday",
+      "thursday",
+      "friday",
+      "saturday",
+      "secondSunday",
+    ];
+    const options = [
+      { value: "01", label: "Января" },
+      { value: "02", label: "Февраля" },
+      { value: "03", label: "Марта" },
+      { value: "04", label: "Апреля" },
+      { value: "05", label: "Мая" },
+      { value: "06", label: "Июня" },
+      { value: "07", label: "Июля" },
+      { value: "08", label: "Августа" },
+      { value: "09", label: "Сентября" },
+      { value: "10", label: "Октября" },
+      { value: "11", label: "Ноября" },
+      { value: "12", label: "Декабря" },
+    ];
+
+    const scheduleSeparated = ar?.map((elem, index) => {
+      const times = elem.match(/\d+:\d+ – (.*\n)/gm)?.join("");
+      const day = elem.substring(times?.length, elem.length);
+      const dateString = dateArray[index] || "";
+
+      const monthName = dateString.substring(
+        dateString.indexOf(" ") + 1,
+        dateString.indexOf("*") - 1
+      );
+
+      let monthNumber = "";
+      options.forEach((month) => {
+        if (month.label.toLocaleLowerCase() === monthName) {
+          monthNumber = month.value;
+        }
+      });
+      return {
+        dateWeek: dateString.substring(0, dateString.indexOf(" ")),
+        dayWeek: dateString.substring(
+          dateString.indexOf("*") + 2,
+          dateString.lastIndexOf("*") - 1
+        ),
+        month: monthNumber,
+        id: ids[index],
+        prayerTimes: times,
+        saintsOfDay: day,
+      };
+    });
+    console.log("trimmed", trimmed, ar, dateArray, scheduleSeparated);
+
+    /*
+      data: [
+        {
+          dateWeek: "19", // Выделять из текста "2 июля * Вторник * 2024 г."
+          dayWeek: "Воскресенье", // Выделять из текста "2 июля * Вторник * 2024 г."
+          id: "firstSunday",
+          month: "05", // Выделять из текста "2 июля * Вторник * 2024 г."
+          prayerTimes: "", //
+          saintsOfDay: ""
+        }
+      ]
+    */
+    res.json({
+      text: trimmed,
+      ar,
+      arMatch: dateArray,
+      scheduleSeparated,
+      data: scheduleSeparated.slice(1),
+    });
   });
 
   // setTimeout(() => {
