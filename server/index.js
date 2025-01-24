@@ -68,6 +68,11 @@ app.post("/schedule", urlencodedParser, (req, res) => {
   });
 });
 
+const wrapOnParagraph = (text) => {
+  return `
+  <p></p>`;
+};
+
 app.post("/upload", upload.single("docx"), function (req, res, next) {
   console.log("POST /upload", req.file);
   const fileName = req.file.originalname;
@@ -75,8 +80,10 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
   docxParser.parseDocx(__dirname + `/uploads/${fileName}`, function (data) {
     let trimmed = data.replace(/Расписание (.+\n){0,4}Святые дня/gm, "");
     trimmed = trimmed.replace(/\r\n\n\n/g, "");
+    trimmed = trimmed.replace(/~https?:\/\/\S+~i/, "");
     const dateArray = trimmed.match(/\d+\s.+г\./g);
 
+    dateArray.unshift("");
     const ar = trimmed.split(/\d+\s.+г\./g);
 
     const ids = [
@@ -105,7 +112,7 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
     ];
 
     const scheduleSeparated = ar?.map((elem, index) => {
-      const times = elem.match(/\d+:\d+ – (.*\n)/gm)?.join("");
+      const times = elem.match(/\d+:\d+\s?–\s?(.*\n)/gm)?.join("");
       const day = elem.substring(times?.length, elem.length);
       const dateString = dateArray[index] || "";
 
@@ -120,15 +127,17 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
           monthNumber = month.value;
         }
       });
+
+      const dayNumber = dateString.substring(0, dateString.indexOf(" "));
       return {
-        dateWeek: dateString.substring(0, dateString.indexOf(" ")),
+        dateWeek: dayNumber.length > 1 ? dayNumber : "0" + dayNumber,
         dayWeek: dateString.substring(
           dateString.indexOf("*") + 2,
           dateString.lastIndexOf("*") - 1
         ),
         month: monthNumber,
         id: ids[index],
-        prayerTimes: times,
+        prayerTimes: times || "",
         saintsOfDay: day,
       };
     });
@@ -151,7 +160,7 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
       ar,
       arMatch: dateArray,
       scheduleSeparated,
-      data: scheduleSeparated.slice(1),
+      data: scheduleSeparated.slice(1), // какой-то костыль  -
     });
   });
 

@@ -14,25 +14,6 @@ document.getElementsByTagName("background.jpg").ondragstart = function () {
 };
 
 const { Dragger } = Upload;
-const props = {
-  name: "file",
-  multiple: true,
-  action: "/upload",
-  onChange(info) {
-    const { status } = info.file;
-    if (status !== "загрузка") {
-      console.log(info.file, info.fileList);
-    }
-    if (status === "готово") {
-      message.success(`${info.file.name} файл успешно загружен`);
-    } else if (status === "ошибка") {
-      message.error(`${info.file.name} загрузка файла не удалась`);
-    }
-  },
-  onDrop(e) {
-    console.log("Dropped files", e.dataTransfer.files);
-  },
-};
 
 const ButtonSave = () => {
   useEffect(() => {
@@ -72,7 +53,8 @@ const ButtonSave = () => {
   const onChangeWeek = (date, dateString) => {
     const daysOfWeek = getWeekDays(date);
     const newSchedule = scheduleElements.map((element, index) => {
-      element.dateWeek = daysOfWeek[index].day;
+      console.log("daysOfWeek[index]?.day", daysOfWeek[index]?.day);
+      element.dateWeek = daysOfWeek[index]?.day;
       element.month = daysOfWeek[index].month;
       return element;
     });
@@ -149,6 +131,37 @@ const ButtonSave = () => {
   // const [preFillButton, setPreFillButton] = useState(false); //----------->
   const [buttonEditState, setButtonEditState] = useState(true);
   const [scheduleElements, setScheduleElements] = useState(initialSchedule);
+
+  const props = {
+    name: "docx",
+    multiple: false,
+    action: "/upload",
+    onChange(info) {
+      const { status } = info.file;
+      console.log("Loading info", info.file.xhr?.response);
+      if (info.file.xhr?.status === 200) {
+        try {
+          const res = JSON.parse(info.file.xhr?.response);
+          console.log("REPOS", res);
+          setScheduleElements(res.data);
+        } catch (e) {
+          console.error("error parse json response", e);
+        }
+      }
+
+      if (status !== "загрузка") {
+        console.log(info.file, info.fileList);
+      }
+      if (status === "готово") {
+        message.success(`${info.file.name} файл успешно загружен`);
+      } else if (status === "ошибка") {
+        message.error(`${info.file.name} загрузка файла не удалась`);
+      }
+    },
+    onDrop(e) {
+      console.log("Dropped files", e.dataTransfer.files);
+    },
+  };
 
   const changeOnDateChange = (value, element) => {
     const newSchedule = [...scheduleElements];
