@@ -17,7 +17,7 @@
     "@tiptap/pm": "^2.10.3",
     "@tiptap/react": "^2.10.3",
     "@tiptap/starter-kit": "^2.10.3",
-    "antd": "^5.10.1",
+    "antd": "^5.23.0",
     "html-react-parser": "^5.0.6",
     "html-to-image": "^1.11.11",
     "mammoth": "^1.8.0",

@@ -10,7 +10,7 @@ const Schedule = (props) => {
     const options = [
       { value: "01", label: "Января" },
       { value: "02", label: "Февраля" },
-      { value: "03", label: "Мара" },
+      { value: "03", label: "Марта" },
       { value: "04", label: "Апреля" },
       { value: "05", label: "Мая" },
       { value: "06", label: "Июня" },

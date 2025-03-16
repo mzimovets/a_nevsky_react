@@ -96,6 +96,16 @@ td {
   src: url("/public/Izhitsa.ttf"); /* Путь к файлу со шрифтом */
 }
 
+@font-face {
+  font-family: Sorok;
+  src: url("/public/itccharterpro.otf");
+}
+
+@font-face {
+  font-family: Rodnik;
+  src: url("/public/Rodnik.otf");
+}
+
 .font-serif {
   font-family: "Pompadur", serif;
 }
@@ -236,3 +246,45 @@ p {
 /* Avatar.js */
 
 /* News.js */
+
+.ant-select-selector {
+  max-height: 32px;
+}
+
+/* Центрирование текста Святые дня в режиме редактирования */
+.schedule-table td:last-child {
+  text-align: center;
+}
+
+.ant-upload-list-text {
+  margin: 0 22px !important;
+}
+.ant-upload-list-item-name {
+  width: 185px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* sorok */
+
+.sorokust {
+  background-image: url("/public/sorok-bg.png");
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.ant-otp-input {
+  font-family: "Rodnik";
+  font-weight: bold;
+  background-color: transparent;
+  color: white;
+  font-weight: 14px;
+}
+
+.ant-otp-input:hover,
+.ant-otp-input:focus {
+  background-color: transparent;
+  border-color: #d9d9d9;
+}

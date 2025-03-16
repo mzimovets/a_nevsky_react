@@ -2,6 +2,7 @@ import express from "express";
 const app = express();
 import bodyParser from "body-parser";
 import docxParser from "docx-parser";
+import fs from "fs";
 
 //--------NeDB---------
 import Datastore from "nedb";
@@ -73,9 +74,22 @@ const wrapOnParagraph = (text) => {
   <p></p>`;
 };
 
+const deleteOldFiles = (fileName) => {
+  // Считываем все файлы и удаяем файл, если его имя не совпадает с fileName
+  fs.readdirSync(__dirname + "/uploads").forEach((file) => {
+    console.log(file);
+    if (file !== fileName) {
+      // Удаляем
+      fs.unlinkSync(__dirname + `/uploads/${file}`);
+    }
+  });
+};
+
 app.post("/upload", upload.single("docx"), function (req, res, next) {
   console.log("POST /upload", req.file);
+
   const fileName = req.file.originalname;
+  deleteOldFiles(fileName);
 
   docxParser.parseDocx(__dirname + `/uploads/${fileName}`, function (data) {
     let trimmed = data.replace(/Расписание (.+\n){0,4}Святые дня/gm, "");

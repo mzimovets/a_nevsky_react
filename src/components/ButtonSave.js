@@ -29,9 +29,18 @@ const ButtonSave = () => {
   const [fontSize, setFontSize] = useState("18px");
 
   const handleChange = (value) => {
-    setFontSize(value);
+    const selectedFont = value[value.length - 1];
+    if (selectedFont?.indexOf("px") !== -1) {
+      setFontSize(selectedFont);
+    } else {
+      setFontSize(selectedFont + "px");
+    }
+    console.log("value", value);
+    setFontFilter("");
   };
   const ref = useRef(null);
+
+  const [fontFilter, setFontFilter] = useState();
 
   const onButtonClick = useCallback(() => {
     if (ref.current === null) {
@@ -135,6 +144,7 @@ const ButtonSave = () => {
   const props = {
     name: "docx",
     multiple: false,
+    maxCount: 1,
     action: "/upload",
     onChange(info) {
       const { status } = info.file;
@@ -218,7 +228,7 @@ const ButtonSave = () => {
           right: "14px",
         }}
       >
-        <InfoModal />
+        {/* <InfoModal /> */}
       </div>
       <div
         style={{
@@ -316,9 +326,22 @@ const ButtonSave = () => {
                 </div>
                 <Select
                   className="font-serif"
-                  style={{ width: "103px" }}
+                  style={{
+                    width: "103px",
+                    maxHeight: "32px",
+                  }}
                   value={fontSize}
                   onChange={handleChange}
+                  searchValue={fontFilter}
+                  onSearch={(text) => {
+                    if (/^\d*\.?\d*$/.test(text)) {
+                      setFontFilter(text);
+                      console.log("textMatch", /^\d*\.?\d*$/.test(text));
+                    } else {
+                      setFontFilter("");
+                    }
+                  }}
+                  mode="tags"
                   options={[
                     {
                       value: "18px",
@@ -349,6 +372,16 @@ const ButtonSave = () => {
                       label: "24",
                     },
                   ]}
+                  tagRender={(props) => {
+                    const { label, closable, onClose } = props;
+                    return (
+                      <span>
+                        {label.replace("px", "")}{" "}
+                        {/* Убираем 'px' при отображении */}
+                        {closable && <span onClick={onClose}></span>}
+                      </span>
+                    );
+                  }}
                 />
               </div>
             </Form.Item>

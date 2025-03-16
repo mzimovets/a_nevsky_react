@@ -5,6 +5,8 @@ import mqtt from "mqtt";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import News from "./components/news/News";
 import SchedulePeople from "./components/news/SchedulePeople";
+import { Sorok } from "./components/news/Sorok";
+import { SorokCopy } from "./components/news/SorokCopy";
 
 function App() {
   const [client, setClient] = useState(null);
@@ -95,6 +97,8 @@ function App() {
       <Routes>
         <Route path="/" element={<ButtonSave />} />
         <Route path="/news" element={<News />} />
+        <Route path="/sorok" element={<Sorok />} />
+        <Route path="/sorokcopy" element={<SorokCopy />} />
         <Route path="/schedule" element={<SchedulePeople />} />
       </Routes>
     </Router>
