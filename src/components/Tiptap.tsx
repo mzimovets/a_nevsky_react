@@ -2,10 +2,9 @@
 import {
   BoldOutlined,
   ItalicOutlined,
-  AlignLeftOutlined,
-  AlignCenterOutlined,
-  AlignRightOutlined,
+  FontSizeOutlined,
   FontColorsOutlined,
+  BgColorsOutlined,
 } from "@ant-design/icons";
 import { Select, Popover } from "antd";
 import React, { useState, useRef, useEffect } from "react";
@@ -35,6 +34,25 @@ function removeEmptyParaTags(content) {
   return tempDiv.innerHTML;
 }
 
+const FontSize = TextStyle.extend({
+  addAttributes() {
+    return {
+      fontSize: {
+        default: "18px", // Дефолтный размер шрифта
+        parseHTML: (element) => element.style.fontSize || "18px",
+        renderHTML: (attributes) => {
+          if (!attributes.fontSize) {
+            return {};
+          }
+          return {
+            style: `font-size: ${attributes.fontSize}`,
+          };
+        },
+      },
+    };
+  },
+});
+
 interface IProps {
   content: string;
   onChange: (value: string) => void;
@@ -60,7 +78,7 @@ const Tiptap = (props: IProps) => {
         Bold,
         Italic,
         FontFamily,
-        TextAlign.configure({
+        FontSize,TextAlign.configure({
           types: ["heading", "paragraph"],
         }),
       ],
@@ -106,6 +124,8 @@ const Tiptap = (props: IProps) => {
   const handleColorChange = (selectedColor) => {
     setColor(selectedColor);
     editor.chain().focus().setColor(selectedColor).run();
+    editor.chain().focus().setMark("textStyle", { fontSize: {} }).run();
+    console.log("info", editor.getAttributes("textStyle"));
   };
 
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -117,24 +137,61 @@ const Tiptap = (props: IProps) => {
     }
   };
 
+  const fontSizeOptions = [
+    {
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FontSizeOutlined style={{ fontSize: "16px", lineHeight: "1" }} />
+        </div>
+      ),
+      value: "18px",
+    },
+    {
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FontSizeOutlined style={{ fontSize: "18px", lineHeight: "1" }} />
+        </div>
+      ),
+      value: "22px",
+    },
+    {
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FontSizeOutlined style={{ fontSize: "20px", lineHeight: "1" }} />
+        </div>
+      ),
+      value: "24px",
+    },
+  ];
+
+  const handleFontSizeChange = (value: string) => {
+    editor.chain().focus().setMark("textStyle", { fontSize: value }).run();
+    console.log("handleFontSizeChange", handleFontSizeChange);
+  };
+
   return (
     <>
       <BubbleMenu className="bubbleMenu" editor={editor}>
         <Select
-          defaultValue="Выберите шрифт"
-          style={{ width: 158 }}
+          defaultValue="18px" // Дефолтный размер шрифта
+          style={{ width: 68 }}
+          options={fontSizeOptions}
+          onChange={handleFontSizeChange}
+        />
+        <div className="divider"></div>
+        <Select
+          defaultValue="Pompadur"
+          style={{ width: 52 }}
           onChange={handleChange}
           options={[
-            { value: "", label: "Выберите шрифт", disabled: true },
+            // { value: "", label: "Выберите шрифт", disabled: true },
             {
               value: "Pompadur",
-              label: (
-                <span style={{ fontFamily: "Pompadur" }}>Старославянский</span>
-              ),
+              label: <span style={{ fontFamily: "Pompadur" }}>А</span>,
             },
             {
               value: "Font",
-              label: <span style={{ fontFamily: "Font" }}>Обычный</span>,
+              label: <span style={{ fontFamily: "Font" }}>А</span>,
             },
           ]}
         />
@@ -202,7 +259,7 @@ const Tiptap = (props: IProps) => {
           }
           trigger="click"
         >
-          <FontColorsOutlined />
+          <BgColorsOutlined />
         </Popover>
         {isColorPickerOpen && (
           <div
@@ -239,7 +296,6 @@ const Tiptap = (props: IProps) => {
             ))}
           </div>
         )}
-        <div className="divider"></div>
       </BubbleMenu>
       <EditorContent editor={editor} />
     </>

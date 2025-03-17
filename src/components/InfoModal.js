@@ -59,13 +59,13 @@ const InfoModal = () => {
 
   return (
     <>
-      <Segmented
+      {/* <Segmented
         options={["Собор", "Владыка"]}
         onChange={(value) => {
           console.log(value); // string
         }}
         style={{ marginRight: "24px", fontFamily: "Pompadur" }}
-      />
+      /> */}
       <Modal
         title={<div style={{ width: "242px" }}>Оформление текста</div>}
         open={isModalInfo}
