@@ -10,7 +10,7 @@ const Schedule = (props) => {
     const options = [
       { value: "01", label: "Января" },
       { value: "02", label: "Февраля" },
-      { value: "03", label: "Мара" },
+      { value: "03", label: "Марта" },
       { value: "04", label: "Апреля" },
       { value: "05", label: "Мая" },
       { value: "06", label: "Июня" },
@@ -84,8 +84,12 @@ const Schedule = (props) => {
     const text = preparedBoldText.split("\n");
     console.log(highlightedText);
     console.log("text: ", text);
-    return text.map((newText) => {
-      return <p style={{ margin: "0px" }}>{parse(newText)}</p>;
+    return text.map((newText, index) => {
+      return (
+        <p key={`p-text-${index}`} style={{ margin: "0px" }}>
+          {parse(newText)}
+        </p>
+      );
     });
   };
 
@@ -116,7 +120,7 @@ const Schedule = (props) => {
   };
 
   return (
-    <div className="font-serif">
+    <div className="font-serif" key={"schedule"}>
       <div className="f-img-block">
         <img src="background.png"></img>
         <table className="schedule-table" style={{ fontSize: props.fontSize }}>
@@ -131,7 +135,7 @@ const Schedule = (props) => {
           {props.scheduleElements?.map((element) => {
             console.log("times: ", element.prayerTimes);
             return (
-              <tr key={element.id}>
+              <tr key={element.id + `${element.dateWeek}`}>
                 <td>
                   <div
                     style={{
@@ -159,47 +163,48 @@ const Schedule = (props) => {
                             : "black",
                       }}
                     >
-                      {props.buttonEditState === false ? (
-                        // <TextArea
-                        <Tiptap
-                          content={`<p>${element.prayerTimes}</p>`}
-                          // disabled={props.buttonEditState}
-                          onChange={(value) => {
-                            console.log("sdfsdf", value);
-                            const newSchedule = [...props.scheduleElements];
-                            newSchedule.forEach((newElement) => {
-                              if (newElement.id === element.id) {
-                                newElement.prayerTimes = value;
-                              }
-                            });
-                            props.setScheduleElements(newSchedule);
-                          }}
-                        />
-                      ) : (
+                      {/* {props.buttonEditState === false ? ( */}
+
+                      <Tiptap
+                        isEditable={!props.buttonEditState}
+                        content={`<p>${element.prayerTimes}</p>`}
+                        onChange={(value) => {
+                          console.log("sdfsdf", value);
+                          const newSchedule = [...props.scheduleElements];
+                          newSchedule.forEach((newElement) => {
+                            if (newElement.id === element.id) {
+                              newElement.prayerTimes = value;
+                            }
+                          });
+                          props.setScheduleElements(newSchedule);
+                        }}
+                      />
+                      {/* ) : (
                         <div>{paragraph(element.prayerTimes)}</div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </td>
 
                 <td onClick={() => {}}>
                   {" "}
-                  <div>
-                    {props.buttonEditState === false ? (
-                      <Tiptap
-                        content={`<p>${element.saintsOfDay}</p>`}
-                        // disabled={props.buttonEditState}
-                        onChange={(value) => {
-                          const newSchedule = [...props.scheduleElements];
-                          newSchedule.forEach((newElement) => {
-                            if (newElement.id === element.id) {
-                              newElement.saintsOfDay = value;
-                            }
-                          });
-                          props.setScheduleElements(newSchedule);
-                        }}
-                      />
-                    ) : (
+                  <div style={{ textAlign: "center", padding: "8px" }}>
+                    {/* {props.buttonEditState === false ? ( */}
+                    <Tiptap
+                      key={"tiptap-" + element.id}
+                      content={`<p>${element.saintsOfDay}</p>`}
+                      isEditable={!props.buttonEditState}
+                      onChange={(value) => {
+                        const newSchedule = [...props.scheduleElements];
+                        newSchedule.forEach((newElement) => {
+                          if (newElement.id === element.id) {
+                            newElement.saintsOfDay = value;
+                          }
+                        });
+                        props.setScheduleElements(newSchedule);
+                      }}
+                    />
+                    {/* ) : (
                       <div
                         style={{
                           textAlign: "center",
@@ -211,7 +216,7 @@ const Schedule = (props) => {
                       >
                         {paragraph(element.saintsOfDay)}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </td>
               </tr>

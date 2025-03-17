@@ -208,6 +208,20 @@ const ButtonSave = () => {
     });
   };
 
+  const getFontSizeOptions = () => {
+    const options = [];
+    for (let i = 18; i < 25; i++) {
+      for (let subI = 1; subI < 10; subI++) {
+        options.push({
+          value: `${i}.${subI}px`,
+          label: `${i}.${subI}px`,
+        });
+      }
+    }
+    return options;
+  };
+
+  console.log("getFontSizeOptions()", getFontSizeOptions());
   return (
     <>
       <div
@@ -242,11 +256,10 @@ const ButtonSave = () => {
             style={{ width: "220px", marginBottom: "6px" }}
             onClick={() => {
               console.log("меня нажали", scheduleElements);
-              setButtonEditState(false);
+              setButtonEditState(!buttonEditState);
               if (buttonEditState === false) {
-                //
                 saveSchedule();
-                setButtonEditState(true);
+                // setButtonEditState(true);
               }
             }}
           >
@@ -319,36 +332,51 @@ const ButtonSave = () => {
                   style={{ width: "103px" }}
                   value={fontSize}
                   onChange={handleChange}
-                  options={[
-                    {
-                      value: "18px",
-                      label: "18",
-                    },
-                    {
-                      value: "19px",
-                      label: "19",
-                    },
-                    {
-                      value: "20px",
-                      label: "20",
-                    },
-                    {
-                      value: "21px",
-                      label: "21",
-                    },
-                    {
-                      value: "22px",
-                      label: "22",
-                    },
-                    {
-                      value: "23px",
-                      label: "23",
-                    },
-                    {
-                      value: "24px",
-                      label: "24",
-                    },
-                  ]}
+                  options={
+                    getFontSizeOptions()
+                    //   [
+                    //   {
+                    //     value: "18px",
+                    //     label: "18",
+                    //   },
+                    //   {
+                    //     value: "19px",
+                    //     label: "19",
+                    //   },
+                    //   {
+                    //     value: "19.2px",
+                    //     label: "19.2",
+                    //   },
+                    //   {
+                    //     value: "19.5px",
+                    //     label: "19.5",
+                    //   },
+                    //   {
+                    //     value: "19.8px",
+                    //     label: "19.8",
+                    //   },
+                    //   {
+                    //     value: "20px",
+                    //     label: "20",
+                    //   },
+                    //   {
+                    //     value: "21px",
+                    //     label: "21",
+                    //   },
+                    //   {
+                    //     value: "22px",
+                    //     label: "22",
+                    //   },
+                    //   {
+                    //     value: "23px",
+                    //     label: "23",
+                    //   },
+                    //   {
+                    //     value: "24px",
+                    //     label: "24",
+                    //   },
+                    // ]
+                  }
                 />
               </div>
             </Form.Item>

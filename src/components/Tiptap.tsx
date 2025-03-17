@@ -8,7 +8,7 @@ import {
   FontColorsOutlined,
 } from "@ant-design/icons";
 import { Select, Popover } from "antd";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import Bold from "@tiptap/extension-bold";
 import Document from "@tiptap/extension-document";
@@ -38,30 +38,37 @@ function removeEmptyParaTags(content) {
 interface IProps {
   content: string;
   onChange: (value: string) => void;
+  isEditable: boolean;
 }
 
 const Tiptap = (props: IProps) => {
-  const editor = useEditor({
-    onUpdate({ editor }) {
-      props.onChange(editor.getHTML());
-      console.log("change", editor.getHTML());
+  console.log("props Tiptap", props.isEditable);
+  // Кажется при изменении пропсов useEditor не работает
+
+  const editor = useEditor(
+    {
+      onUpdate({ editor }) {
+        props.onChange(editor.getHTML());
+        console.log("change", editor.getHTML());
+      },
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        Color,
+        TextStyle,
+        Bold,
+        Italic,
+        FontFamily,
+        TextAlign.configure({
+          types: ["heading", "paragraph"],
+        }),
+      ],
+      content: removeEmptyParaTags(props.content),
+      editable: props.isEditable,
     },
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Color,
-      TextStyle,
-      Bold,
-      Italic,
-      FontFamily,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-    ],
-    content: removeEmptyParaTags(props.content),
-    editable: true,
-  });
+    [props.isEditable]
+  );
 
   const menuRef = useRef(null);
 

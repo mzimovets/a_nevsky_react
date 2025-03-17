@@ -73,6 +73,13 @@ const wrapOnParagraph = (text) => {
   <p></p>`;
 };
 
+// Убирает точки в конце строк. Не идеально.
+const removeEndLineDots = (line) => {
+  console.log("line", line);
+  const lineWithoutMiddleDots = line?.replace(/\.\s*\t*?\n/, "\n");
+  return lineWithoutMiddleDots?.replace(/\.\s*\t*$/, "\n");
+};
+
 app.post("/upload", upload.single("docx"), function (req, res, next) {
   console.log("POST /upload", req.file);
   const fileName = req.file.originalname;
@@ -112,14 +119,23 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
     ];
 
     const scheduleSeparated = ar?.map((elem, index) => {
+      // я бы перед часами в расписании выставлял бы принудителоьно \n
+      // Потому что не всегда в доке стоит \n
+      console.log("elem", elem);
       const times = elem.match(/\d+:\d+\s?–\s?(.*\n)/gm)?.join("");
+      // const timesWithSlashN = times.replace(/\d+:\d+\s/, )
+      // times.indexOf('-')
+      // const timesWithSlashN = times?.matchAll(/\d+:\d+\s?–\s?(.*\n)/gm);
+      // console.log("timesWithSlashN", JSON.stringify(timesWithSlashN));
+      console.log("times", times);
       const day = elem.substring(times?.length, elem.length);
+      console.log("day", times);
       const dateString = dateArray[index] || "";
 
-      const monthName = dateString.substring(
-        dateString.indexOf(" ") + 1,
-        dateString.indexOf("*") - 1
-      );
+      const monthName = dateString
+        .substring(dateString.indexOf(" ") + 1, dateString.indexOf("*") - 1)
+        .trim();
+      console.log("monthName", monthName);
 
       let monthNumber = "";
       options.forEach((month) => {
@@ -137,8 +153,8 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
         ),
         month: monthNumber,
         id: ids[index],
-        prayerTimes: times || "",
-        saintsOfDay: day,
+        prayerTimes: removeEndLineDots(times) || "",
+        saintsOfDay: removeEndLineDots(day),
       };
     });
     console.log("trimmed", trimmed, ar, dateArray, scheduleSeparated);
