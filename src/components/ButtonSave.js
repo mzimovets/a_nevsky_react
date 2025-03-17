@@ -2,15 +2,18 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Schedule } from "./Schedule";
 import { InfoModal } from "./InfoModal";
-import { Button, DatePicker } from "antd";
+import { Button, DatePicker, Upload, message, ConfigProvider } from "antd";
 import dayjs from "dayjs";
 import locale from "antd/es/date-picker/locale/ru_RU";
 import "dayjs/locale/ru";
 import { Select, Space, Form } from "antd";
+import { InboxOutlined } from "@ant-design/icons";
 
 document.getElementsByTagName("background.jpg").ondragstart = function () {
   return false;
 };
+
+const { Dragger } = Upload;
 
 const ButtonSave = () => {
   useEffect(() => {
@@ -21,14 +24,23 @@ const ButtonSave = () => {
       .then((data) => {
         console.log("fetchedData", data);
         setScheduleElements(data.data);
+        setFontSize(data.meta?.fontSize);
       });
   }, []);
   const [fontSize, setFontSize] = useState("18px");
 
   const handleChange = (value) => {
-    setFontSize(value);
+    const selectedFont = value[value.length - 1];
+    if (selectedFont?.indexOf("px") !== -1) {
+      setFontSize(selectedFont);
+    } else {
+      setFontSize(selectedFont + "px");
+    }
+    setFontFilter("");
   };
   const ref = useRef(null);
+
+  const [fontFilter, setFontFilter] = useState();
 
   const onButtonClick = useCallback(() => {
     if (ref.current === null) {
@@ -50,7 +62,7 @@ const ButtonSave = () => {
   const onChangeWeek = (date, dateString) => {
     const daysOfWeek = getWeekDays(date);
     const newSchedule = scheduleElements.map((element, index) => {
-      element.dateWeek = daysOfWeek[index].day;
+      element.dateWeek = daysOfWeek[index]?.day;
       element.month = daysOfWeek[index].month;
       return element;
     });
@@ -124,30 +136,39 @@ const ButtonSave = () => {
     },
   ];
 
-  // const [preFillButton, setPreFillButton] = useState(false); //----------->
   const [buttonEditState, setButtonEditState] = useState(true);
   const [scheduleElements, setScheduleElements] = useState(initialSchedule);
 
-  const changeOnDateChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.dateWeek = value;
+  const props = {
+    name: "docx",
+    multiple: false,
+    maxCount: 1,
+    action: "/upload",
+    onChange(info) {
+      const { status } = info.file;
+      console.log("Loading info", info.file.xhr?.response);
+      if (info.file.xhr?.status === 200) {
+        try {
+          const res = JSON.parse(info.file.xhr?.response);
+          console.log("REPOS", res);
+          setScheduleElements(res.data);
+        } catch (e) {
+          console.error("error parse json response", e);
+        }
       }
-    });
-    setScheduleElements(newSchedule);
-  };
 
-  const changeOnMonthChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.month = value;
+      if (status !== "загрузка") {
+        console.log(info.file, info.fileList);
       }
-    });
-    setScheduleElements(newSchedule);
+      if (status === "готово") {
+        message.success(`${info.file.name} файл успешно загружен`);
+      } else if (status === "ошибка") {
+        message.error(`${info.file.name} загрузка файла не удалась`);
+      }
+    },
+    onDrop(e) {
+      console.log("Dropped files", e.dataTransfer.files);
+    },
   };
 
   const getWeekDays = (value) => {
@@ -169,8 +190,28 @@ const ButtonSave = () => {
     fetch("/schedule", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "*/*" },
-      body: JSON.stringify({ data: scheduleElements }),
+      body: JSON.stringify({
+        data: scheduleElements,
+        meta: { fontSize: fontSize },
+      }),
     });
+  };
+
+  const getFontSizeOptions = () => {
+    const options = [];
+    for (let i = 18; i < 25; i++) {
+      options.push({
+        value: `${i}px`,
+        label: `${i}`,
+      });
+      for (let subI = 1; subI < 10; subI++) {
+        options.push({
+          value: `${i}.${subI}px`,
+          label: `${i}.${subI}`,
+        });
+      }
+    }
+    return options;
   };
 
   return (
@@ -183,7 +224,7 @@ const ButtonSave = () => {
           right: "14px",
         }}
       >
-        <InfoModal />
+        {/* <InfoModal /> */}
       </div>
       <div
         style={{
@@ -206,12 +247,9 @@ const ButtonSave = () => {
             className="font-serif"
             style={{ width: "220px", marginBottom: "6px" }}
             onClick={() => {
-              console.log("меня нажали", scheduleElements);
-              setButtonEditState(false);
+              setButtonEditState(!buttonEditState);
               if (buttonEditState === false) {
-                //
                 saveSchedule();
-                setButtonEditState(true);
               }
             }}
           >
@@ -233,14 +271,18 @@ const ButtonSave = () => {
               onClick={() => {
                 const newSchedule = scheduleElements.map((element, index) => {
                   if (element.dayWeek === "Суббота") {
-                    element.prayerTimes =
-                      "08:00 - Литургия \n17:00 - Всенощное бдение";
+                    element.prayerTimes = `
+                    <p>08:00 – Литургия</p>
+                    <p>17:00 - Всенощное бдение</p>`;
                   } else if (element.dayWeek === "Воскресенье") {
-                    element.prayerTimes =
-                      "07:00 - Ранняя Литургия \n10:00 - Поздняя Литургия \n17:00 - Вечернее богослужение";
+                    element.prayerTimes = `
+                      <p>07:00 – Ранняя Литургия</p>
+                      <p>10:00 - Поздняя Литургия</p>
+                      <p>17:00 - Вечернее богослужение</p>`;
                   } else {
-                    element.prayerTimes =
-                      "08:00 - Литургия \n17:00 - Вечернее богослужение";
+                    element.prayerTimes = `
+                      <p>08:00 - Литургия</p>
+                      <p>17:00 - Вечернее богослужение</p>`;
                   }
                   return element;
                 });
@@ -260,71 +302,88 @@ const ButtonSave = () => {
             </Button>
           </div>
         )}
-        <div style={{ paddingLeft: "22px" }}>
-          <Form layout="vertical">
-            <Form.Item style={{ marginBottom: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div
-                  className="font-serif"
-                  style={{
-                    marginRight: "10px",
-                    paddingTop: "6px",
-                    paddingBottom: "6px",
-                    fontSize: "14px",
-                  }}
-                >
-                  Размер шрифта:
+        {!buttonEditState && (
+          <div style={{ paddingLeft: "22px" }}>
+            <Form layout="vertical">
+              <Form.Item style={{ marginBottom: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <div
+                    className="font-serif"
+                    style={{
+                      marginRight: "10px",
+                      paddingTop: "6px",
+                      paddingBottom: "6px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Размер шрифта:
+                  </div>
+                  <Select
+                    className="font-serif"
+                    style={{
+                      width: "103px",
+                      maxHeight: "32px",
+                    }}
+                    value={fontSize}
+                    onChange={handleChange}
+                    searchValue={fontFilter}
+                    onSearch={(text) => {
+                      if (/^\d*\.?\d*$/.test(text)) {
+                        setFontFilter(text);
+                        console.log(
+                          "textMatch",
+                          /^\d*\.?\d*$/.test(text),
+                          text
+                        );
+                      } else {
+                        setFontFilter("");
+                      }
+                    }}
+                    mode="tags"
+                    tagRender={(props) => {
+                      const { label, closable, onClose } = props;
+                      return (
+                        <span style={{ padding: "4px" }}>
+                          {label.replace("px", "")}{" "}
+                          {/* Убираем 'px' при отображении */}
+                          {closable && <span onClick={onClose}></span>}
+                        </span>
+                      );
+                    }}
+                    options={getFontSizeOptions()}
+                  />
                 </div>
-                <Select
-                  className="font-serif"
-                  style={{ width: "103px" }}
-                  value={fontSize}
-                  onChange={handleChange}
-                  options={[
-                    {
-                      value: "18px",
-                      label: "18",
-                    },
-                    {
-                      value: "19px",
-                      label: "19",
-                    },
-                    {
-                      value: "20px",
-                      label: "20",
-                    },
-                    {
-                      value: "21px",
-                      label: "21",
-                    },
-                    {
-                      value: "22px",
-                      label: "22",
-                    },
-                    {
-                      value: "23px",
-                      label: "23",
-                    },
-                    {
-                      value: "24px",
-                      label: "24",
-                    },
-                  ]}
-                />
-              </div>
-            </Form.Item>
-          </Form>
-        </div>
+              </Form.Item>
+            </Form>
+          </div>
+        )}
+
         <div style={{ paddingLeft: "22px" }}>
           <Button
             className="font-serif"
             onClick={onButtonClick}
-            style={{ width: "220px" }}
+            style={{ width: "220px", marginBottom: "10px" }}
             disabled={buttonEditState === false}
           >
             Скачать
           </Button>
         </div>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimaryHover: "rgb(149, 94, 74)",
+            },
+          }}
+        >
+          <Dragger {...props} style={{ marginLeft: "22px", width: "220px" }}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{ color: "rgb(149, 94, 74)" }} />
+            </p>
+            <p className="ant-upload-text" style={{ fontFamily: "Pompadur" }}>
+              Нажмите или перетащите документ в эту область для загрузки
+            </p>
+          </Dragger>
+        </ConfigProvider>
       </div>
       {
         <div

@@ -49,6 +49,7 @@ body {
 .schedule-table td {
   padding: 4px;
   border: 1px #989898 solid;
+  align-content: center;
 }
 
 .schedule-table tr td:first-child {
@@ -95,6 +96,16 @@ td {
   src: url("/public/Izhitsa.ttf"); /* Путь к файлу со шрифтом */
 }
 
+@font-face {
+  font-family: Sorok;
+  src: url("/public/itccharterpro.otf");
+}
+
+@font-face {
+  font-family: Rodnik;
+  src: url("/public/Rodnik.otf");
+}
+
 .font-serif {
   font-family: "Pompadur", serif;
 }
@@ -136,4 +147,145 @@ p {
 
 .ant-btn-primary:hover {
   background-color: rgb(57, 55, 69) !important;
+}
+
+.ant-upload-list-item.ant-upload-list-item-error {
+  margin-left: 22px;
+}
+
+.ant-upload-list-item-uploading {
+  margin-left: 22px;
+}
+
+/* color picker */
+
+#swatch {
+  background: white;
+  box-shadow: 1em 1em 1em rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+#swatch .info {
+  padding: 1em;
+}
+
+#swatch h1 {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+#swatch h2 {
+  font-weight: normal;
+  margin: 0;
+}
+
+input[type="color"] {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  height: 3em; /* Reduced size */
+  width: 3em; /* Reduced size */
+  border-radius: 50%; /* Makes the input circular */
+}
+
+*:focus {
+  outline: none;
+}
+
+::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%; /* Ensures circle inside WebKit browsers */
+}
+
+::-moz-color-swatch {
+  border: 0;
+}
+
+/* bubbleMenu */
+.bubbleMenu {
+  font-size: 18px;
+  background: white;
+  border: 1px solid rgba(200, 200, 200, 0.8); /* Light gray border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06); /* Soft shadow */
+  padding: 0.5em 1em;
+  display: flex;
+  gap: 0.5em; /* Space between menu items */
+  align-items: center;
+  width: auto; /* Автоматическая ширина */
+  max-width: 100%; /* Ограничение ширины (необязательно) */
+}
+
+.bubbleMenu select {
+  margin: 0 5px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+p {
+  margin: 0px;
+}
+
+.divider {
+  border-left: 1px solid rgba(200, 200, 200, 0.8);
+  height: 23px;
+}
+
+.tiptap.ProseMirror {
+  align-content: center;
+}
+
+/* Avatar.js */
+
+/* News.js */
+
+.ant-select-selector {
+  max-height: 32px;
+}
+
+/* Центрирование текста Святые дня в режиме редактирования */
+.schedule-table td:last-child {
+  text-align: center;
+}
+
+.ant-upload-list-text {
+  margin: 0 22px !important;
+}
+.ant-upload-list-item-name {
+  width: 185px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* sorok */
+
+.sorokust {
+  background-image: url("/public/sorok-bg.png");
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.ant-otp-input {
+  font-family: "Rodnik";
+  font-weight: bold;
+  background-color: transparent;
+  color: white;
+  font-weight: 14px;
+}
+
+.ant-otp-input:hover,
+.ant-otp-input:focus {
+  background-color: transparent;
+  border-color: #d9d9d9;
 }

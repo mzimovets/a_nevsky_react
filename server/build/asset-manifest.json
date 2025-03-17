@@ -1,17 +1,20 @@
 {
   "files": {
-    "main.css": "./static/css/main.be88c092.css",
-    "main.js": "./static/js/main.40f5d489.js",
+    "main.css": "./static/css/main.4f13d4c3.css",
+    "main.js": "./static/js/main.2373c0be.js",
     "static/js/787.89f81fea.chunk.js": "./static/js/787.89f81fea.chunk.js",
+    "static/media/sorok-bg.png": "./static/media/sorok-bg.9ccb313ddfd64109549f.png",
     "static/media/STIXGeneral-Regular.ttf": "./static/media/STIXGeneral-Regular.1d677d772e44c68705b6.ttf",
+    "static/media/Rodnik.otf": "./static/media/Rodnik.b8d3d45ceb948681ac3a.otf",
+    "static/media/itccharterpro.otf": "./static/media/itccharterpro.c59ee4a4d28e20ce3180.otf",
     "static/media/Izhitsa.ttf": "./static/media/Izhitsa.035b83626b2a19d6c8ec.ttf",
     "index.html": "./index.html",
-    "main.be88c092.css.map": "./static/css/main.be88c092.css.map",
-    "main.40f5d489.js.map": "./static/js/main.40f5d489.js.map",
+    "main.4f13d4c3.css.map": "./static/css/main.4f13d4c3.css.map",
+    "main.2373c0be.js.map": "./static/js/main.2373c0be.js.map",
     "787.89f81fea.chunk.js.map": "./static/js/787.89f81fea.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.be88c092.css",
-    "static/js/main.40f5d489.js"
+    "static/css/main.4f13d4c3.css",
+    "static/js/main.2373c0be.js"
   ]
 }
