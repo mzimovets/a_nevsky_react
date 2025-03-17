@@ -59,7 +59,7 @@ app.post("/schedule", urlencodedParser, (req, res) => {
     if (err) {
       database.update(
         { _id: "schedule" },
-        { $set: { data: req.body.data } },
+        { $set: { data: req.body.data, meta: req.body.meta } },
         (err, doc) => {
           console.log(err, doc);
           res.json({ status: "ok" });
@@ -77,9 +77,30 @@ const wrapOnParagraph = (text) => {
 // Убирает точки в конце строк. Не идеально.
 const removeEndLineDots = (line) => {
   console.log("line", line);
-  const lineWithoutMiddleDots = line?.replace(/\.\s*\t*?\n/, "\n");
+  const lineWithoutMiddleDots = line?.replace(/\.\s*\t*\S*\u00A0*\r*?\n/, "\n");
   return lineWithoutMiddleDots?.replace(/\.\s*\t*$/, "\n");
 };
+
+function formatSchedule(text) {
+  if (text) {
+    console.log("SYMBOLS", [...text].map((c) => c.charCodeAt(0)).join(" "));
+  }
+  return (
+    text
+      ?.replace(/(\d{2}:\d{2} –)/g, (match, time, offset) => {
+        return (offset === 0 ? "" : "\n") + "<p>" + match;
+      })
+      .replace(/([^\S\s\u00A0\t\r\n]+)?\.(?=\s*(\d{2}:\d{2} –))/g, "$1") // Убираем точку перед временем и пробелы
+      .replace(/\.(?=\n|$)/g, "") + // Убираем точки в конце абзацев
+    "</p>"
+  );
+}
+
+const inputText =
+  "07:00 – Ранняя Литургия свт. Василия Великого 10:00 – Поздняя Литургия свт. Василия Великого. 17:00 – Вечернее богослужение. Пассия";
+const formattedText = formatSchedule(inputText);
+
+console.log(formattedText);
 
 const deleteOldFiles = (fileName) => {
   // Считываем все файлы и удаяем файл, если его имя не совпадает с fileName
@@ -137,10 +158,6 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
       // Потому что не всегда в доке стоит \n
       console.log("elem", elem);
       const times = elem.match(/\d+:\d+\s?–\s?(.*\n)/gm)?.join("");
-      // const timesWithSlashN = times.replace(/\d+:\d+\s/, )
-      // times.indexOf('-')
-      // const timesWithSlashN = times?.matchAll(/\d+:\d+\s?–\s?(.*\n)/gm);
-      // console.log("timesWithSlashN", JSON.stringify(timesWithSlashN));
       console.log("times", times);
       const day = elem.substring(times?.length, elem.length);
       console.log("day", times);
@@ -167,7 +184,7 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
         ),
         month: monthNumber,
         id: ids[index],
-        prayerTimes: removeEndLineDots(times) || "",
+        prayerTimes: formatSchedule(removeEndLineDots(times)) || "",
         saintsOfDay: removeEndLineDots(day),
       };
     });

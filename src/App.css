@@ -211,6 +211,7 @@ input[type="color"] {
 
 /* bubbleMenu */
 .bubbleMenu {
+  font-size: 18px;
   background: white;
   border: 1px solid rgba(200, 200, 200, 0.8); /* Light gray border */
   border-radius: 8px; /* Rounded corners */

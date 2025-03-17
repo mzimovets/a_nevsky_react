@@ -24,6 +24,7 @@ const ButtonSave = () => {
       .then((data) => {
         console.log("fetchedData", data);
         setScheduleElements(data.data);
+        setFontSize(data.meta?.fontSize);
       });
   }, []);
   const [fontSize, setFontSize] = useState("18px");
@@ -35,7 +36,6 @@ const ButtonSave = () => {
     } else {
       setFontSize(selectedFont + "px");
     }
-    console.log("value", value);
     setFontFilter("");
   };
   const ref = useRef(null);
@@ -62,7 +62,6 @@ const ButtonSave = () => {
   const onChangeWeek = (date, dateString) => {
     const daysOfWeek = getWeekDays(date);
     const newSchedule = scheduleElements.map((element, index) => {
-      console.log("daysOfWeek[index]?.day", daysOfWeek[index]?.day);
       element.dateWeek = daysOfWeek[index]?.day;
       element.month = daysOfWeek[index].month;
       return element;
@@ -137,7 +136,6 @@ const ButtonSave = () => {
     },
   ];
 
-  // const [preFillButton, setPreFillButton] = useState(false); //----------->
   const [buttonEditState, setButtonEditState] = useState(true);
   const [scheduleElements, setScheduleElements] = useState(initialSchedule);
 
@@ -173,28 +171,6 @@ const ButtonSave = () => {
     },
   };
 
-  const changeOnDateChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.dateWeek = value;
-      }
-    });
-    setScheduleElements(newSchedule);
-  };
-
-  const changeOnMonthChange = (value, element) => {
-    const newSchedule = [...scheduleElements];
-
-    newSchedule.forEach((newElement) => {
-      if (newElement.id === element.id) {
-        newElement.month = value;
-      }
-    });
-    setScheduleElements(newSchedule);
-  };
-
   const getWeekDays = (value) => {
     const startWeek = dayjs(value).startOf("week");
     const days = [];
@@ -214,24 +190,30 @@ const ButtonSave = () => {
     fetch("/schedule", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "*/*" },
-      body: JSON.stringify({ data: scheduleElements }),
+      body: JSON.stringify({
+        data: scheduleElements,
+        meta: { fontSize: fontSize },
+      }),
     });
   };
 
   const getFontSizeOptions = () => {
     const options = [];
     for (let i = 18; i < 25; i++) {
+      options.push({
+        value: `${i}px`,
+        label: `${i}`,
+      });
       for (let subI = 1; subI < 10; subI++) {
         options.push({
           value: `${i}.${subI}px`,
-          label: `${i}.${subI}px`,
+          label: `${i}.${subI}`,
         });
       }
     }
     return options;
   };
 
-  console.log("getFontSizeOptions()", getFontSizeOptions());
   return (
     <>
       <div
@@ -265,11 +247,9 @@ const ButtonSave = () => {
             className="font-serif"
             style={{ width: "220px", marginBottom: "6px" }}
             onClick={() => {
-              console.log("меня нажали", scheduleElements);
               setButtonEditState(!buttonEditState);
               if (buttonEditState === false) {
                 saveSchedule();
-                // setButtonEditState(true);
               }
             }}
           >
@@ -322,139 +302,61 @@ const ButtonSave = () => {
             </Button>
           </div>
         )}
-        <div style={{ paddingLeft: "22px" }}>
-          <Form layout="vertical">
-            <Form.Item style={{ marginBottom: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div
-                  className="font-serif"
-                  style={{
-                    marginRight: "10px",
-                    paddingTop: "6px",
-                    paddingBottom: "6px",
-                    fontSize: "14px",
-                  }}
-                >
-                  Размер шрифта:
+        {!buttonEditState && (
+          <div style={{ paddingLeft: "22px" }}>
+            <Form layout="vertical">
+              <Form.Item style={{ marginBottom: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <div
+                    className="font-serif"
+                    style={{
+                      marginRight: "10px",
+                      paddingTop: "6px",
+                      paddingBottom: "6px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Размер шрифта:
+                  </div>
+                  <Select
+                    className="font-serif"
+                    style={{
+                      width: "103px",
+                      maxHeight: "32px",
+                    }}
+                    value={fontSize}
+                    onChange={handleChange}
+                    searchValue={fontFilter}
+                    onSearch={(text) => {
+                      if (/^\d*\.?\d*$/.test(text)) {
+                        setFontFilter(text);
+                        console.log(
+                          "textMatch",
+                          /^\d*\.?\d*$/.test(text),
+                          text
+                        );
+                      } else {
+                        setFontFilter("");
+                      }
+                    }}
+                    mode="tags"
+                    tagRender={(props) => {
+                      const { label, closable, onClose } = props;
+                      return (
+                        <span style={{ padding: "4px" }}>
+                          {label.replace("px", "")}{" "}
+                          {/* Убираем 'px' при отображении */}
+                          {closable && <span onClick={onClose}></span>}
+                        </span>
+                      );
+                    }}
+                    options={getFontSizeOptions()}
+                  />
                 </div>
-                <Select
-                  className="font-serif"
-                  style={{
-                    width: "103px",
-                    maxHeight: "32px",
-                  }}
-                  value={fontSize}
-                  onChange={handleChange}
-                  searchValue={fontFilter}
-                  onSearch={(text) => {
-                    if (/^\d*\.?\d*$/.test(text)) {
-                      setFontFilter(text);
-                      console.log("textMatch", /^\d*\.?\d*$/.test(text));
-                    } else {
-                      setFontFilter("");
-                    }
-                  }}
-                  mode="tags"
-                  options={[
-                    {
-                      value: "18px",
-                      label: "18",
-                    },
-                    {
-                      value: "19px",
-                      label: "19",
-                    },
-                    {
-                      value: "20px",
-                      label: "20",
-                    },
-                    {
-                      value: "21px",
-                      label: "21",
-                    },
-                    {
-                      value: "22px",
-                      label: "22",
-                    },
-                    {
-                      value: "23px",
-                      label: "23",
-                    },
-                    {
-                      value: "24px",
-                      label: "24",
-                    },
-                  ]}
-                  tagRender={(props) => {
-                    const { label, closable, onClose } = props;
-                    return (
-                      <span>
-                        {label.replace("px", "")}{" "}
-                        {/* Убираем 'px' при отображении */}
-                        {closable && <span onClick={onClose}></span>}
-                      </span>
-                    );
-                  }}
-                  options={
-                    getFontSizeOptions()
-                    //   [
-                    //   {
-                    //     value: "18px",
-                    //     label: "18",
-                    //   },
-                    //   {
-                    //     value: "19px",
-                    //     label: "19",
-                    //   },
-                    //   {
-                    //     value: "19.2px",
-                    //     label: "19.2",
-                    //   },
-                    //   {
-                    //     value: "19.5px",
-                    //     label: "19.5",
-                    //   },
-                    //   {
-                    //     value: "19.8px",
-                    //     label: "19.8",
-                    //   },
-                    //   {
-                    //     value: "20px",
-                    //     label: "20",
-                    //   },
-                    //   {
-                    //     value: "21px",
-                    //     label: "21",
-                    //   },
-                    //   {
-                    //     value: "22px",
-                    //     label: "22",
-                    //   },
-                    //   {
-                    //     value: "23px",
-                    //     label: "23",
-                    //   },
-                    //   {
-                    //     value: "24px",
-                    //     label: "24",
-                    //   },
-                    // ]
-                  }
-                />
-              </div>
-            </Form.Item>
-          </Form>
-        </div>
-
-        {/* <form
-          style={{ marginBottom: "6px" }}
-          action="/upload"
-          method="post"
-          enctype="multipart/form-data"
-        >
-          <input type="file" name="docx" />
-          <input type="submit" onClick={(e) => {}} />
-        </form> */}
+              </Form.Item>
+            </Form>
+          </div>
+        )}
 
         <div style={{ paddingLeft: "22px" }}>
           <Button

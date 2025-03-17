@@ -38,8 +38,8 @@ const FontSize = TextStyle.extend({
   addAttributes() {
     return {
       fontSize: {
-        default: "18px", // Дефолтный размер шрифта
-        parseHTML: (element) => element.style.fontSize || "18px",
+        // default: "18px", // Дефолтный размер шрифта
+        parseHTML: (element) => element.style.fontSize, //|| "18px",
         renderHTML: (attributes) => {
           if (!attributes.fontSize) {
             return {};
@@ -78,7 +78,8 @@ const Tiptap = (props: IProps) => {
         Bold,
         Italic,
         FontFamily,
-        FontSize,TextAlign.configure({
+        FontSize,
+        TextAlign.configure({
           types: ["heading", "paragraph"],
         }),
       ],
@@ -89,23 +90,6 @@ const Tiptap = (props: IProps) => {
   );
 
   const menuRef = useRef(null);
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (
-  //       menuRef.current &&
-  //       !menuRef.current.contains(event.target) &&
-  //       !event.target.closest(".bubbleMenu")
-  //     ) {
-  //       editor.commands.blur(); // Закрыть bubbleMenu
-  //     }
-  //   };
-
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, [editor]);
 
   const predefinedColors = [
     "rgba(0, 0, 0, 0.992)",
@@ -118,7 +102,7 @@ const Tiptap = (props: IProps) => {
   ]; // Предустановленные цвета
 
   const [color, setColor] = useState(
-    editor.getAttributes("textStyle").color || predefinedColors[1]
+    editor.getAttributes("textStyle").color || predefinedColors[0]
   );
 
   const handleColorChange = (selectedColor) => {
@@ -130,6 +114,18 @@ const Tiptap = (props: IProps) => {
 
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
+  useEffect(() => {
+    const updateColorSelection = ({ editor }) => {
+      setColor(editor.getAttributes("textStyle").color || predefinedColors[0]);
+    };
+
+    editor.on("selectionUpdate", updateColorSelection);
+
+    return () => {
+      editor.off("update", updateColorSelection);
+    };
+  }, [editor]);
+
   const handleChange = (value) => {
     console.log("handleChange");
     if (value) {
@@ -138,6 +134,14 @@ const Tiptap = (props: IProps) => {
   };
 
   const fontSizeOptions = [
+    {
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          -
+        </div>
+      ),
+      value: "",
+    },
     {
       label: (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -170,21 +174,20 @@ const Tiptap = (props: IProps) => {
   };
 
   return (
-    <>
+    <div>
       <BubbleMenu className="bubbleMenu" editor={editor}>
         <Select
-          defaultValue="18px" // Дефолтный размер шрифта
+          // defaultValue="18px" // Дефолтный размер шрифта
           style={{ width: 68 }}
           options={fontSizeOptions}
           onChange={handleFontSizeChange}
         />
         <div className="divider"></div>
         <Select
-          defaultValue="Pompadur"
+          defaultValue="Font"
           style={{ width: 52 }}
           onChange={handleChange}
           options={[
-            // { value: "", label: "Выберите шрифт", disabled: true },
             {
               value: "Pompadur",
               label: <span style={{ fontFamily: "Pompadur" }}>А</span>,
@@ -259,7 +262,9 @@ const Tiptap = (props: IProps) => {
           }
           trigger="click"
         >
-          <BgColorsOutlined />
+          <BgColorsOutlined
+            style={{ color: editor.getAttributes("textStyle").color }}
+          />
         </Popover>
         {isColorPickerOpen && (
           <div
@@ -298,7 +303,7 @@ const Tiptap = (props: IProps) => {
         )}
       </BubbleMenu>
       <EditorContent editor={editor} />
-    </>
+    </div>
   );
 };
 

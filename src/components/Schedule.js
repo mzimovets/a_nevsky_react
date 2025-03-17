@@ -29,7 +29,7 @@ const Schedule = (props) => {
         monthName = option.label;
       }
     });
-    return monthName + " -";
+    return monthName;
   };
 
   const dateNum = (value) => {
@@ -148,10 +148,11 @@ const Schedule = (props) => {
                     }}
                   >
                     <div>{dateNum(element.dateWeek)}</div>
-                    <div style={{ paddingLeft: "4px" }}>
+                    <div style={{ paddingLeft: "4px", paddingRight: "7px" }}>
                       {monthLiteral(element.month)}
                     </div>
-                    <div style={{ paddingLeft: "10px" }}>{element.dayWeek}</div>
+                    <span>-</span>
+                    <div style={{ paddingLeft: "7px" }}>{element.dayWeek}</div>
                   </div>
                   <div>
                     <div
