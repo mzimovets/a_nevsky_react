@@ -164,8 +164,6 @@ const Schedule = (props) => {
                             : "black",
                       }}
                     >
-                      {/* {props.buttonEditState === false ? ( */}
-
                       <Tiptap
                         isEditable={!props.buttonEditState}
                         content={`<p>${element.prayerTimes}</p>`}
@@ -180,17 +178,22 @@ const Schedule = (props) => {
                           props.setScheduleElements(newSchedule);
                         }}
                       />
-                      {/* ) : (
-                        <div>{paragraph(element.prayerTimes)}</div>
-                      )} */}
                     </div>
                   </div>
                 </td>
 
                 <td onClick={() => {}}>
                   {" "}
-                  <div style={{ textAlign: "center", padding: "8px" }}>
-                    {/* {props.buttonEditState === false ? ( */}
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "8px",
+                      color:
+                        element.dayWeek === "Воскресенье"
+                          ? "#990b0bfd"
+                          : "black",
+                    }}
+                  >
                     <Tiptap
                       key={"tiptap-" + element.id}
                       content={`<p>${element.saintsOfDay}</p>`}
@@ -205,19 +208,6 @@ const Schedule = (props) => {
                         props.setScheduleElements(newSchedule);
                       }}
                     />
-                    {/* ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          color:
-                            element.dayWeek === "Воскресенье"
-                              ? "#990b0bfd"
-                              : "black",
-                        }}
-                      >
-                        {paragraph(element.saintsOfDay)}
-                      </div>
-                    )} */}
                   </div>
                 </td>
               </tr>
