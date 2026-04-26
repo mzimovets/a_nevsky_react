@@ -120,44 +120,83 @@ const Schedule = (props) => {
   };
 
   return (
-    <div className="font-serif" key={"schedule"}>
-      <div className="f-img-block">
-        <img src="background.png"></img>
-        <table className="schedule-table" style={{ fontSize: props.fontSize }}>
-          <tr>
-            <td
-              style={{ textAlign: "center", borderRight: "1px #989898 solid " }}
-            >
-              День недели
-            </td>
-            <td style={{ textAlign: "center" }}>Святые дня</td>
-          </tr>
-          {props.scheduleElements?.map((element) => {
-            console.log("times: ", element.prayerTimes);
-            return (
-              <tr key={element.id + `${element.dateWeek}`}>
-                <td>
-                  <div
-                    style={{
-                      paddingTop: "4px",
-                      display: "flex",
-                      color:
-                        element.dayWeek === "Воскресенье"
-                          ? "#990b0bfd"
-                          : "black",
-                    }}
-                  >
-                    <div>{dateNum(element.dateWeek)}</div>
-                    <div style={{ paddingLeft: "4px", paddingRight: "7px" }}>
-                      {monthLiteral(element.month)}
-                    </div>
-                    <span>-</span>
-                    <div style={{ paddingLeft: "7px" }}>{element.dayWeek}</div>
-                  </div>
-                  <div>
+    <div className="bg-page">
+      <div className="font-serif" key={"schedule"}>
+        <div className="f-img-block">
+          <img src="background.png"></img>
+          <table
+            className="schedule-table"
+            style={{ fontSize: props.fontSize }}
+          >
+            <tr>
+              <td
+                style={{
+                  textAlign: "center",
+                  borderRight: "1px #989898 solid ",
+                }}
+              >
+                День недели
+              </td>
+              <td style={{ textAlign: "center" }}>Святые дня</td>
+            </tr>
+            {props.scheduleElements?.map((element) => {
+              console.log("times: ", element.prayerTimes);
+              return (
+                <tr key={element.id + `${element.dateWeek}`}>
+                  <td>
                     <div
                       style={{
-                        paddingRight: "4px",
+                        paddingTop: "4px",
+                        display: "flex",
+                        color:
+                          element.dayWeek === "Воскресенье"
+                            ? "#990b0bfd"
+                            : "black",
+                      }}
+                    >
+                      <div>{dateNum(element.dateWeek)}</div>
+                      <div style={{ paddingLeft: "4px", paddingRight: "7px" }}>
+                        {monthLiteral(element.month)}
+                      </div>
+                      <span>-</span>
+                      <div style={{ paddingLeft: "7px" }}>
+                        {element.dayWeek}
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        style={{
+                          paddingRight: "4px",
+                          color:
+                            element.dayWeek === "Воскресенье"
+                              ? "#990b0bfd"
+                              : "black",
+                        }}
+                      >
+                        <Tiptap
+                          isEditable={!props.buttonEditState}
+                          content={`<p>${element.prayerTimes}</p>`}
+                          onChange={(value) => {
+                            console.log("sdfsdf", value);
+                            const newSchedule = [...props.scheduleElements];
+                            newSchedule.forEach((newElement) => {
+                              if (newElement.id === element.id) {
+                                newElement.prayerTimes = value;
+                              }
+                            });
+                            props.setScheduleElements(newSchedule);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+
+                  <td onClick={() => {}}>
+                    {" "}
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "8px",
                         color:
                           element.dayWeek === "Воскресенье"
                             ? "#990b0bfd"
@@ -165,55 +204,26 @@ const Schedule = (props) => {
                       }}
                     >
                       <Tiptap
+                        key={"tiptap-" + element.id}
+                        content={`<p>${element.saintsOfDay}</p>`}
                         isEditable={!props.buttonEditState}
-                        content={`<p>${element.prayerTimes}</p>`}
                         onChange={(value) => {
-                          console.log("sdfsdf", value);
                           const newSchedule = [...props.scheduleElements];
                           newSchedule.forEach((newElement) => {
                             if (newElement.id === element.id) {
-                              newElement.prayerTimes = value;
+                              newElement.saintsOfDay = value;
                             }
                           });
                           props.setScheduleElements(newSchedule);
                         }}
                       />
                     </div>
-                  </div>
-                </td>
-
-                <td onClick={() => {}}>
-                  {" "}
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "8px",
-                      color:
-                        element.dayWeek === "Воскресенье"
-                          ? "#990b0bfd"
-                          : "black",
-                    }}
-                  >
-                    <Tiptap
-                      key={"tiptap-" + element.id}
-                      content={`<p>${element.saintsOfDay}</p>`}
-                      isEditable={!props.buttonEditState}
-                      onChange={(value) => {
-                        const newSchedule = [...props.scheduleElements];
-                        newSchedule.forEach((newElement) => {
-                          if (newElement.id === element.id) {
-                            newElement.saintsOfDay = value;
-                          }
-                        });
-                        props.setScheduleElements(newSchedule);
-                      }}
-                    />
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </table>
+                  </td>
+                </tr>
+              );
+            })}
+          </table>
+        </div>
       </div>
     </div>
   );

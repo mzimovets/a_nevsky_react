@@ -379,7 +379,14 @@ const ButtonSave = () => {
             <p className="ant-upload-drag-icon">
               <InboxOutlined style={{ color: "rgb(149, 94, 74)" }} />
             </p>
-            <p className="ant-upload-text" style={{ fontFamily: "Pompadur" }}>
+            <p
+              className="ant-upload-text"
+              style={{
+                fontFamily: "Pompadur",
+                color: "rgb(149, 94, 74)",
+                fontWeight: "bold",
+              }}
+            >
               Нажмите или перетащите документ в эту область для загрузки
             </p>
           </Dragger>
