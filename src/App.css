@@ -2,11 +2,22 @@ html,
 body {
   margin: 0;
   padding: 0%;
-  overflow-x: hidden;
-  background-image: url("/public/bg.png");
+  /* clip (не hidden) — не создаёт скролл-контейнер, не ломает position: sticky */
+  overflow-x: clip;
+  background-image: url("/bg.png");
 }
 .App {
   text-align: center;
+}
+
+/* обычный интерфейсный шрифт — перебивает глобальное p { font-family: Font } */
+.ui-font,
+.ui-font p,
+.ui-font h1,
+.ui-font h2,
+.ui-font h3 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 .App-logo {
@@ -94,17 +105,17 @@ td {
 
 @font-face {
   font-family: Pompadur; /* Гарнитура шрифта */
-  src: url("/public/Izhitsa.ttf"); /* Путь к файлу со шрифтом */
+  src: url("/Izhitsa.ttf"); /* Путь к файлу со шрифтом */
 }
 
 @font-face {
   font-family: Sorok;
-  src: url("/public/itccharterpro.otf");
+  src: url("/itccharterpro.otf");
 }
 
 @font-face {
   font-family: Rodnik;
-  src: url("/public/Rodnik.otf");
+  src: url("/Rodnik.otf");
 }
 
 .font-serif {
@@ -135,11 +146,15 @@ td {
 
 @font-face {
   font-family: Font; /* Гарнитура шрифта */
-  src: url("/public/STIXGeneral-Regular.ttf"); /* Путь к файлу со шрифтом */
+  src: url("/STIXGeneral-Regular.ttf"); /* Путь к файлу со шрифтом */
 }
 
-p {
-  font-family: Font;
+/* @layer base — чтобы утилиты Tailwind (mb-*, font-*) могли перебивать это
+   правило на конкретных <p>; без слоя незалёренный селектор бьёт все утилиты */
+@layer base {
+  p {
+    font-family: Font;
+  }
 }
 
 .ant-btn-primary {
@@ -210,30 +225,177 @@ input[type="color"] {
   border: 0;
 }
 
-/* bubbleMenu */
+/* ── Плашка форматирования над выделением (Tiptap BubbleMenu) ─────────── */
 .bubbleMenu {
-  font-size: 18px;
-  background: white;
-  border: 1px solid rgba(200, 200, 200, 0.8); /* Light gray border */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06); /* Soft shadow */
-  padding: 0.5em 1em;
+  --tt-accent: rgb(149, 94, 74);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -8px rgba(30, 20, 15, 0.28),
+    0 2px 6px rgba(30, 20, 15, 0.1);
+  padding: 6px;
+  width: max-content;
+  max-width: min(96vw, 560px);
+}
+
+/* все кнопки строго в один ряд; на совсем узких экранах — горизонтальный скролл */
+.bubbleMenu__row {
   display: flex;
-  gap: 0.5em; /* Space between menu items */
+  flex-wrap: nowrap;
+  gap: 3px;
   align-items: center;
-  width: auto; /* Автоматическая ширина */
-  max-width: 100%; /* Ограничение ширины (необязательно) */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.bubbleMenu__row::-webkit-scrollbar {
+  display: none;
+}
+.bubbleMenu__row > * {
+  flex: none;
 }
 
-.bubbleMenu select {
-  margin: 0 5px;
-  padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+/* раскрытая строка (размеры / цвета) — над основной плашкой, по центру */
+.bubbleMenu__pop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-p {
-  margin: 0px;
+/* размер — только иконка «А» */
+.tt-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  color: #1f1a16;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.tt-pill:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.tt-pill.is-active {
+  background: var(--tt-accent);
+  border-color: var(--tt-accent);
+  color: #fff;
+}
+
+.tt-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 1px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.tt-group {
+  display: flex;
+  gap: 2px;
+}
+
+/* кнопки-иконки: размер / жирный / курсив */
+.tt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #1f1a16;
+  transition: background 0.12s, color 0.12s;
+}
+.tt-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.tt-btn.is-active {
+  background: var(--tt-accent);
+  color: #fff;
+}
+
+/* переключатель шрифта Аа / Аа */
+.tt-chip {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #1f1a16;
+  transition: background 0.12s, color 0.12s;
+}
+.tt-chip:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.tt-chip.is-active {
+  background: var(--tt-accent);
+  color: #fff;
+}
+
+/* кнопки-переключатели выпадашек (размер / цвет) */
+.tt-pop__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: #1f1a16;
+  transition: background 0.12s;
+}
+.tt-pop__toggle:hover,
+.tt-pop__toggle.is-open {
+  background: rgba(0, 0, 0, 0.06);
+}
+.tt-pop__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+}
+.tt-pop__caret {
+  font-size: 9px;
+  color: #8a8078;
+}
+.tt-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s;
+}
+.tt-swatch:hover {
+  transform: scale(1.12);
+}
+.tt-swatch.is-active {
+  box-shadow: 0 0 0 2px var(--tt-accent);
+}
+
+@layer base {
+  p {
+    margin: 0px;
+  }
 }
 
 .divider {
@@ -243,6 +405,105 @@ p {
 
 .tiptap.ProseMirror {
   align-content: center;
+}
+
+/* кнопка удаления дня на постере (только в режиме правки) */
+.schedule-row-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #d9b3a8;
+  background: #fff;
+  color: #990b0b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0.5;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+.schedule-row-del:hover {
+  opacity: 1;
+  background: #990b0b;
+  color: #fff;
+}
+
+/* кнопка «добавить день» — на последнем дне, под кнопкой удаления */
+.schedule-row-add {
+  position: absolute;
+  top: 32px;
+  right: 4px;
+  z-index: 5;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #b9c2ab;
+  background: #fff;
+  color: rgb(149, 94, 74);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0.5;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+.schedule-row-add:hover {
+  opacity: 1;
+  background: rgb(149, 94, 74);
+  color: #fff;
+}
+
+/* «+ день сверху» — на первой строке, прямо под кнопкой удаления */
+.schedule-row-add--top {
+  top: 32px;
+  right: 4px;
+  left: auto;
+}
+/* если первая строка = последняя (один день), «+ день вперёд» уводим ниже */
+.schedule-row-add--shift {
+  top: 60px;
+}
+
+/* Заголовок дня — шрифт устава (Pompadur/Izhitsa), как было раньше */
+.cell-heading p,
+.form-heading .ProseMirror p {
+  font-family: "Pompadur", "Izhitsa", serif;
+}
+
+/* Заголовок дня в мобильной форме — редактируется, но без рамки */
+.form-heading .ProseMirror {
+  min-height: auto;
+  outline: none;
+}
+.form-heading .ProseMirror p {
+  margin: 0;
+}
+
+/* Поле формы на базе Tiptap */
+.rich-field .ProseMirror {
+  min-height: 3.25em;
+  outline: none;
+}
+.rich-field .ProseMirror:focus {
+  outline: none;
+}
+.rich-field .ProseMirror p {
+  margin: 0;
+}
+.rich-field .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #b8b2a6;
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 
 /* Avatar.js */
@@ -268,10 +529,90 @@ p {
   text-overflow: ellipsis;
 }
 
+/* Mobile toolbar */
+
+.mobile-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid #d9d9d9;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.12);
+  overflow: visible;
+}
+
+.mobile-toolbar__date {
+  width: 100%;
+}
+
+.mobile-toolbar__date .ant-picker {
+  width: 100%;
+}
+
+.mobile-toolbar__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mobile-toolbar__actions .ant-btn {
+  flex: 1;
+  font-family: "Pompadur", serif;
+}
+
+.mobile-toolbar__more {
+  background: none;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+}
+
+.mobile-extra-panel {
+  position: fixed;
+  bottom: 90px;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid #d9d9d9;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  max-height: 60vh;
+  overflow: visible;
+}
+
+.mobile-extra-panel .ant-btn {
+  width: 100%;
+  font-family: "Pompadur", serif;
+}
+
+/* Отступ снизу для расписания на мобильном, чтобы тулбар не перекрывал */
+@media (max-width: 910px) {
+  .bg-page {
+    padding-bottom: 100px;
+  }
+}
+
 /* sorok */
 
 .sorokust {
-  background-image: url("/public/sorok-bg.png");
+  background-image: url("/sorok-bg.png");
   width: 100%;
   height: 100vh;
   overflow: hidden;

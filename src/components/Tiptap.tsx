@@ -1,13 +1,12 @@
 // src/Tiptap.tsx
 import {
-  BoldOutlined,
-  ItalicOutlined,
-  FontSizeOutlined,
-  FontColorsOutlined,
-  BgColorsOutlined,
-} from "@ant-design/icons";
-import { Select, Popover } from "antd";
-import React, { useState, useRef, useEffect } from "react";
+  IconBold as BoldIcon,
+  IconItalic as ItalicIcon,
+  IconMitre,
+  IconKnight,
+} from "./icons";
+import { SCHEDULE_SNIPPETS, htmlHasSnippet } from "../lib/snippets";
+import { useState, useRef, useEffect } from "react";
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import Bold from "@tiptap/extension-bold";
 import Document from "@tiptap/extension-document";
@@ -41,7 +40,8 @@ const FontSize = TextStyle.extend({
         // default: "18px", // Дефолтный размер шрифта
         parseHTML: (element) => element.style.fontSize, //|| "18px",
         renderHTML: (attributes) => {
-          if (!attributes.fontSize) {
+          // fontSize иногда приходит объектом ({}) из color-хендлера — игнорируем
+          if (!attributes.fontSize || typeof attributes.fontSize !== "string") {
             return {};
           }
           return {
@@ -59,15 +59,49 @@ interface IProps {
   isEditable: boolean;
 }
 
-const Tiptap = (props: IProps) => {
-  console.log("props Tiptap", props.isEditable);
-  // Кажется при изменении пропсов useEditor не работает
+/**
+ * Быстрая фраза. Вставляется НА МЕСТО выделения / курсора (что выделено —
+ * заменяется фразой). mode "repeat" — вставляет каждый раз. mode "toggle" —
+ * если фраза уже есть в поле, нажатие её убирает, иначе вставляет.
+ */
+const insertSnippetAtCursor = (editor, text: string) => {
+  editor.chain().focus().insertContent(text).run();
+};
 
+const runSnippet = (editor, text: string, mode: string) => {
+  if (mode === "toggle") {
+    const doc = editor.state.doc;
+    let range: { from: number; to: number } | null = null;
+    doc.descendants((node: any, pos: number) => {
+      if (range) return false;
+      if (node.isText && node.text && node.text.includes(text)) {
+        const start = pos + node.text.indexOf(text);
+        range = { from: start, to: start + text.length };
+        return false;
+      }
+      return true;
+    });
+    if (range) {
+      editor.chain().focus().deleteRange(range).run();
+      return;
+    }
+  }
+  insertSnippetAtCursor(editor, text);
+};
+
+const FONT_SIZE_OPTIONS = [
+  { title: "Обычный", value: "", glyph: 13 },
+  { title: "Средний", value: "20px", glyph: 17 },
+  { title: "Крупный", value: "24px", glyph: 21 },
+  { title: "Очень крупный", value: "28px", glyph: 26 },
+];
+
+const Tiptap = (props: IProps) => {
+  // Кажется при изменении пропсов useEditor не работает
   const editor = useEditor(
     {
       onUpdate({ editor }) {
         props.onChange(editor.getHTML());
-        console.log("change", editor.getHTML());
       },
       extensions: [
         Document,
@@ -89,8 +123,6 @@ const Tiptap = (props: IProps) => {
     [props.isEditable]
   );
 
-  const menuRef = useRef(null);
-
   const predefinedColors = [
     "rgba(0, 0, 0, 0.992)",
     "rgba(153, 11, 11, 0.992)",
@@ -101,206 +133,227 @@ const Tiptap = (props: IProps) => {
     "rgba(128, 128, 128, 0.992)",
   ]; // Предустановленные цвета
 
-  const [color, setColor] = useState(
-    editor.getAttributes("textStyle").color || predefinedColors[0]
-  );
+  const [, force] = useState(0);
+  const [openPanel, setOpenPanel] = useState<null | "size" | "color">(null);
 
   const handleColorChange = (selectedColor) => {
-    setColor(selectedColor);
     editor.chain().focus().setColor(selectedColor).run();
-    editor.chain().focus().setMark("textStyle", { fontSize: {} }).run();
-    console.log("info", editor.getAttributes("textStyle"));
   };
 
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-
+  // выпадашки (размер / цвет) сворачиваются по клику вне плашки
   useEffect(() => {
-    const updateColorSelection = ({ editor }) => {
-      setColor(editor.getAttributes("textStyle").color || predefinedColors[0]);
+    if (!openPanel) return;
+    const onDown = (e: MouseEvent) => {
+      const menu = (e.target as HTMLElement)?.closest?.(".bubbleMenu");
+      if (!menu) setOpenPanel(null);
     };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [openPanel]);
 
-    editor.on("selectionUpdate", updateColorSelection);
-
+  // перерисовываем плашку при смене выделения — чтобы подсветка активных
+  // кнопок (жирный/курсив/цвет/шрифт/размер) была актуальной
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => force((n) => n + 1);
+    editor.on("selectionUpdate", rerender);
+    editor.on("transaction", rerender);
     return () => {
-      editor.off("update", updateColorSelection);
+      editor.off("selectionUpdate", rerender);
+      editor.off("transaction", rerender);
     };
   }, [editor]);
 
+  // Внешнее изменение content (предзаполнение, загрузка DOCX, смена недели) —
+  // подхватываем ТОЛЬКО когда изменился сам проп и пользователь не в ячейке.
+  const lastContent = useRef(props.content);
+  useEffect(() => {
+    if (!editor) return;
+    if (props.content === lastContent.current) return;
+    lastContent.current = props.content;
+    if (!editor.isFocused) {
+      editor.commands.setContent(removeEmptyParaTags(props.content), false);
+    }
+  }, [props.content, editor]);
+
   const handleChange = (value) => {
-    console.log("handleChange");
-    if (value) {
+    if (!value) return;
+    if (editor.isActive("textStyle", { fontFamily: value })) {
+      editor.chain().focus().unsetFontFamily().run();
+    } else {
       editor.chain().focus().setFontFamily(value).run();
     }
   };
 
-  const fontSizeOptions = [
-    {
-      label: (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          -
-        </div>
-      ),
-      value: "",
-    },
-    {
-      label: (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <FontSizeOutlined style={{ fontSize: "16px", lineHeight: "1" }} />
-        </div>
-      ),
-      value: "18px",
-    },
-    {
-      label: (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <FontSizeOutlined style={{ fontSize: "18px", lineHeight: "1" }} />
-        </div>
-      ),
-      value: "22px",
-    },
-    {
-      label: (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <FontSizeOutlined style={{ fontSize: "20px", lineHeight: "1" }} />
-        </div>
-      ),
-      value: "24px",
-    },
-  ];
-
   const handleFontSizeChange = (value: string) => {
     editor.chain().focus().setMark("textStyle", { fontSize: value }).run();
-    console.log("handleFontSizeChange", handleFontSizeChange);
   };
+
+  if (!editor) return null;
+
+  const currentSize = editor.getAttributes("textStyle").fontSize || "";
+  const activeColor = editor.getAttributes("textStyle").color || "";
+  const isPompadur = editor.isActive("textStyle", { fontFamily: "Pompadur" });
 
   return (
     <div>
-      <BubbleMenu className="bubbleMenu" editor={editor}>
-        <Select
-          // defaultValue="18px" // Дефолтный размер шрифта
-          style={{ width: 68 }}
-          options={fontSizeOptions}
-          onChange={handleFontSizeChange}
-        />
-        <div className="divider"></div>
-        <Select
-          defaultValue="Font"
-          style={{ width: 52 }}
-          onChange={handleChange}
-          options={[
-            {
-              value: "Pompadur",
-              label: <span style={{ fontFamily: "Pompadur" }}>А</span>,
-            },
-            {
-              value: "Font",
-              label: <span style={{ fontFamily: "Font" }}>А</span>,
-            },
-          ]}
-        />
-        <div className="divider"></div>
-        <BoldOutlined
-          style={{ color: "black" }}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive("bold") ? "active" : ""}
-        />
-        <ItalicOutlined
-          style={{ color: "black" }}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive("italic") ? "active" : ""}
-        />
-        <Popover
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              editor.commands.blur();
-              console.log("editor", editor);
-            }
-          }}
-          content={
-            <div style={{ display: "flex", gap: "12px" }}>
-              {predefinedColors.map((col) => (
-                <div
-                  key={col}
-                  onClick={() => {
-                    handleColorChange(col);
-                    setIsColorPickerOpen(false); // Закрыть окно после выбора цвета
-                  }}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "28px", // Внешняя граница
-                    height: "28px",
-                    borderRadius: "50%",
-                    backgroundColor: color === col ? col : "#fff", // Внешняя граница цветом кружка, если выбран
-                    cursor: "pointer",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      width: "24px", // Белая граница
-                      height: "24px",
-                      borderRadius: "50%",
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "20px", // Основной кружок
-                        height: "20px",
-                        backgroundColor: col,
-                        borderRadius: "50%",
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          }
-          trigger="click"
-        >
-          <BgColorsOutlined
-            style={{ color: editor.getAttributes("textStyle").color }}
-          />
-        </Popover>
-        {isColorPickerOpen && (
+      <BubbleMenu
+        className="bubbleMenu"
+        editor={editor}
+        // держим плашку открытой, пока есть выделение — клики по кнопкам
+        // её не закрывают; закроется, когда выделение спадёт (клик мимо)
+        shouldShow={({ editor: e, state }) =>
+          e.isEditable && !state.selection.empty
+        }
+        tippyOptions={{
+          maxWidth: "none",
+          duration: 120,
+          interactive: true,
+          hideOnClick: false,
+        }}
+      >
+        {/* Раскрытая строка (размер / цвет) — над плашкой */}
+        {openPanel && (
           <div
-            style={{
-              position: "relative",
-              bottom: "30px", // Расположить окно над кнопкой
-              left: "0",
-              backgroundColor: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              padding: "8px",
-              display: "flex",
-              gap: "8px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              zIndex: 1000,
-            }}
+            className="bubbleMenu__pop"
+            onMouseDown={(e) => e.preventDefault()}
           >
-            {predefinedColors.map((col) => (
-              <div
-                key={col}
-                onClick={() => {
-                  handleColorChange(col);
-                  setIsColorPickerOpen(false); // Закрыть окно после выбора цвета
-                }}
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: col,
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  border: color === col ? "2px solid #000" : "none",
-                }}
-              />
-            ))}
+            {openPanel === "size" &&
+              FONT_SIZE_OPTIONS.map((o) => (
+                <button
+                  key={o.value || "def"}
+                  type="button"
+                  title={o.title}
+                  className={
+                    currentSize === o.value ? "tt-pill is-active" : "tt-pill"
+                  }
+                  onClick={() => handleFontSizeChange(o.value)}
+                >
+                  <span style={{ fontSize: o.glyph, fontWeight: 700, lineHeight: 1 }}>
+                    А
+                  </span>
+                </button>
+              ))}
+            {openPanel === "color" &&
+              predefinedColors.map((col) => (
+                <button
+                  type="button"
+                  key={col}
+                  aria-label="Цвет текста"
+                  className={
+                    activeColor === col ? "tt-swatch is-active" : "tt-swatch"
+                  }
+                  style={{ background: col }}
+                  onClick={() => handleColorChange(col)}
+                />
+              ))}
           </div>
         )}
+
+        <div className="bubbleMenu__row" onMouseDown={(e) => e.preventDefault()}>
+          {/* Размер */}
+          <button
+            type="button"
+            className={
+              openPanel === "size" ? "tt-pop__toggle is-open" : "tt-pop__toggle"
+            }
+            title="Размер шрифта"
+            onClick={() => setOpenPanel((p) => (p === "size" ? null : "size"))}
+          >
+            <span style={{ fontWeight: 700, fontSize: 15 }}>А</span>
+            <span className="tt-pop__caret">▾</span>
+          </button>
+
+          <span className="tt-sep" />
+
+          {/* Шрифт */}
+          <div className="tt-group">
+            <button
+              type="button"
+              title="Устав"
+              className={isPompadur ? "tt-chip is-active" : "tt-chip"}
+              style={{ fontFamily: "Pompadur" }}
+              onClick={() => handleChange("Pompadur")}
+            >
+              Аа
+            </button>
+            <button
+              type="button"
+              title="Обычный шрифт"
+              className={!isPompadur ? "tt-chip is-active" : "tt-chip"}
+              style={{ fontFamily: "Font" }}
+              onClick={() => handleChange("Font")}
+            >
+              Аа
+            </button>
+          </div>
+
+          <span className="tt-sep" />
+
+          {/* Начертание */}
+          <div className="tt-group">
+            <button
+              type="button"
+              className={editor.isActive("bold") ? "tt-btn is-active" : "tt-btn"}
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              title="Жирный"
+            >
+              <BoldIcon size={16} />
+            </button>
+            <button
+              type="button"
+              className={
+                editor.isActive("italic") ? "tt-btn is-active" : "tt-btn"
+              }
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              title="Курсив"
+            >
+              <ItalicIcon size={16} />
+            </button>
+          </div>
+
+          <span className="tt-sep" />
+
+          {/* Цвет */}
+          <button
+            type="button"
+            className={
+              openPanel === "color" ? "tt-pop__toggle is-open" : "tt-pop__toggle"
+            }
+            title="Цвет текста"
+            onClick={() => setOpenPanel((p) => (p === "color" ? null : "color"))}
+          >
+            <span
+              className="tt-pop__dot"
+              style={{ background: activeColor || predefinedColors[0] }}
+            />
+            <span className="tt-pop__caret">▾</span>
+          </button>
+
+          <span className="tt-sep" />
+
+          {/* Быстрые вставки типовых фраз */}
+          <div className="tt-group">
+            {SCHEDULE_SNIPPETS.map((s) => {
+              const Icon = s.id === "bishop" ? IconMitre : IconKnight;
+              // подсветка только у тумблера; «repeat» — обычная кнопка-добавление
+              const active =
+                s.mode === "toggle" && htmlHasSnippet(editor.getHTML(), s.text);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  title={s.label}
+                  aria-label={s.label}
+                  className={active ? "tt-btn is-active" : "tt-btn"}
+                  onClick={() => runSnippet(editor, s.text, s.mode)}
+                >
+                  <Icon size={s.id === "akathist" ? 22 : 16} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </BubbleMenu>
       <EditorContent editor={editor} />
     </div>

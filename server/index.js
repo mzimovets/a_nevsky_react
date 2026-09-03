@@ -7,9 +7,6 @@ import fs from "fs";
 //--------NeDB---------
 import Datastore from "nedb";
 
-export const database = new Datastore("database.db");
-database.loadDatabase();
-
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import mammoth from "mammoth";
@@ -17,6 +14,11 @@ import mammoth from "mammoth";
 import multer from "multer";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// путь к БД — рядом с этим файлом, а не относительно cwd,
+// чтобы `npm run server` из корня работал одинаково
+export const database = new Datastore(__dirname + "/database.db");
+database.loadDatabase();
 
 app.use(express.static(__dirname + "/build"));
 
@@ -37,9 +39,9 @@ app.get("/", (req, res) => {
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4400;
 app.listen(PORT, () => {
-  console.log("express on 4000");
+  console.log("express on " + PORT);
 });
 
 app.get("/", (req, res) => {
@@ -74,17 +76,13 @@ const wrapOnParagraph = (text) => {
   <p></p>`;
 };
 
-// Убирает точки в конце строк. Не идеально.
+// Было: слишком жадный regex срезал слово после точки в конце строки.
 const removeEndLineDots = (line) => {
-  console.log("line", line);
-  const lineWithoutMiddleDots = line?.replace(/\.\s*\t*\S*\u00A0*\r*?\n/, "\n");
-  return lineWithoutMiddleDots?.replace(/\.\s*\t*$/, "\n");
+  // trailing "." at end of line only — keeps "еп. Тобольского" intact
+  return line?.replace(/\.[ \t\u00A0]*(?=\r?\n|$)/g, "");
 };
 
 function formatSchedule(text) {
-  if (text) {
-    console.log("SYMBOLS", [...text].map((c) => c.charCodeAt(0)).join(" "));
-  }
   return (
     text
       ?.replace(/(\d{2}:\d{2} –)/g, (match, time, offset) => {
@@ -229,4 +227,4 @@ app.post("/upload", upload.single("docx"), function (req, res, next) {
   // }, 2000);
 });
 
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(__dirname + "/uploads"));

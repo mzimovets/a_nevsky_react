@@ -1,37 +1,38 @@
 import CurrentData from "./CurrentData";
 import AvatarPhoto from "./AvatarPhoto";
-import { Typography } from "antd";
-const { Title, Paragraph, Text, Link } = Typography;
 
 const News = () => {
   return (
     <div>
-      <div
-        style={{ width: "100%", height: "55px", backgroundColor: "red" }}
-      ></div>
+      <div style={{ width: "100%", height: "55px", backgroundColor: "red" }}></div>
       <div style={{ display: "flex" }}>
         <CurrentData />
-        <Title
+        <h2
           style={{
             textAlign: "center",
             width: "80%",
-            margin: "0 40px",
-            marginTop: "10px",
+            margin: "10px 40px 0",
+            fontSize: "28px",
+            fontWeight: 600,
           }}
-          level={2}
         >
           Проповедь в Неделю 18-ю по Пятидесятнице,
-        </Title>
+        </h2>
       </div>
-      <Title
-        style={{ textAlign: "center", width: "80%", margin: "0 150px" }}
-        level={2}
+      <h2
+        style={{
+          textAlign: "center",
+          width: "80%",
+          margin: "0 150px",
+          fontSize: "28px",
+          fontWeight: 600,
+        }}
       >
         день памяти святых отцов VII Вселенского Собора
-      </Title>
+      </h2>
       <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
         <AvatarPhoto />
-        <Paragraph style={{ marginTop: "20px" }}>
+        <p style={{ marginTop: "20px", lineHeight: 1.6, maxWidth: "70ch" }}>
           Сегодня, в Неделю 18-ю по Пятидесятнице, день памяти святых отцов VII
           Вселенского Собора, совершили Божественную литургию в храме Казанской
           иконы Божией Матери. «Всечестные отцы, братья и сестры! Всех вас
@@ -107,7 +108,7 @@ const News = () => {
           стараться сеять богато в этой жизни добрыми делами, чтобы богато и
           пожать в жизни будущего века. Аминь. С праздником всех вас
           возлюбленные братья и сестры!»
-        </Paragraph>
+        </p>
       </div>
     </div>
   );

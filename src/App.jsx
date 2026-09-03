@@ -3,6 +3,7 @@ import { ButtonSave } from "./components/ButtonSave";
 import { useState, useEffect } from "react";
 import mqtt from "mqtt";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "@heroui/react";
 import News from "./components/news/News";
 import SchedulePeople from "./components/news/SchedulePeople";
 import { Sorok } from "./components/news/Sorok";
@@ -93,15 +94,18 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<ButtonSave />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/sorok" element={<Sorok />} />
-        <Route path="/sorokcopy" element={<SorokCopy />} />
-        <Route path="/schedule" element={<SchedulePeople />} />
-      </Routes>
-    </Router>
+    <>
+      <ToastProvider placement="top-center" />
+      <Router>
+        <Routes>
+          <Route path="/" element={<ButtonSave />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/sorok" element={<Sorok />} />
+          <Route path="/sorokcopy" element={<SorokCopy />} />
+          <Route path="/schedule" element={<SchedulePeople />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 {
-  "short_name": "",
-  "name": "",
+  "short_name": "Расписание",
+  "name": "Расписание Богослужений",
   "icons": [
     {
       "src": "favicon.ico",

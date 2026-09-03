@@ -12,6 +12,15 @@
 
 # production
 /build
+/dist
+node_modules/.vite
+
+# runtime data on the server — не деплоим, прод держит своё
+/server/database.db
+/server/uploads/
+
+# local tooling
+.claude/
 
 # misc
 .DS_Store

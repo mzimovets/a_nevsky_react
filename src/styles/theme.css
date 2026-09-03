@@ -1,0 +1,43 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Шрифт интерфейса — тот же, что в проекте «камертон/ноты» (Roboto Slab) */
+@font-face {
+  font-family: "Roboto Slab";
+  src: url("/RobotoSlab-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Бренд-палитра Александро-Невского собора ───────────────────────────
+   Значения перенесены 1:1 из старого кода (ButtonSave.js / Schedule.js /
+   Tiptap.tsx), чтобы вид и экспорт не поехали. */
+@theme {
+  --color-brand: #955e4a; /* rgb(149,94,74) — основные кнопки */
+  --color-brand-dark: #393745; /* rgb(57,55,69)  — hover      */
+  --color-sacred: #990b0b; /* воскресные дни и *красный*  */
+
+  --color-poster-terracotta: #b5613c; /* внешняя рамка постера   */
+  --color-poster-navy: #2c3550; /* тёмно-синие квадраты    */
+  --color-poster-sage: #8a9a7b; /* зелёные ромбы           */
+  --color-poster-paper: #fdfdfb; /* фон «бумаги»            */
+
+  /* нейтральная гамма интерфейса (не зависим от внутренних токенов HeroUI) */
+  --color-paper: #f6f4f0;
+  --color-card: #ffffff;
+  --color-line: #e4ded4;
+  --color-muted: #7c7568;
+
+  --font-pompadur: "Pompadur", "Izhitsa", serif;
+  --font-poster: "Font", "STIXGeneral", "Times New Roman", serif;
+  --font-slab: "Roboto Slab", "STIXGeneral", Georgia, serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
