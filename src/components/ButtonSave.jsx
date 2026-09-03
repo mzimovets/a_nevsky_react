@@ -132,6 +132,7 @@ const ButtonSave = () => {
   const [zoom, setZoom] = useState(1);
   const [bgDataUrl, setBgDataUrl] = useState(null);
   const [confirm, setConfirm] = useState(null); // модалка подтверждения
+  const [previewImg, setPreviewImg] = useState(null); // фолбэк-показ PNG для ручного сохранения
 
   const captureRef = useRef(null);
   const weekAnchorRef = useRef(null); // dayjs начала выбранной недели — для «+ день»
@@ -350,18 +351,49 @@ const ButtonSave = () => {
         backgroundColor: "#ffffff",
         style: { transform: "none", margin: "0" },
       });
-      const link = document.createElement("a");
-      link.download = "Расписание на неделю.png";
-      link.href = dataUrl;
-      link.click();
-      toast.success("Изображение сохранено");
+
+      const fileName = "Расписание на неделю.png";
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      // 1) Телефон: системный лист «Поделиться» → «Сохранить изображение / в Файлы»
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: fileName });
+          return;
+        } catch (err) {
+          if (err?.name === "AbortError") return; // пользователь закрыл шит
+          // иначе — покажем картинку для ручного сохранения (ниже)
+        }
+      }
+
+      // 2) Десктоп / Android: обычное скачивание файла
+      const isStandalone =
+        window.matchMedia?.("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+      if (!isMobile && !isStandalone) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        toast.success("Изображение сохранено");
+        return;
+      }
+
+      // 3) Фолбэк (iOS «как приложение» и т.п.): показать картинку —
+      //    сохранить долгим нажатием
+      setPreviewImg(dataUrl);
     } catch (err) {
       console.error(err);
       toast.danger("Не удалось сохранить изображение");
     } finally {
       setIsExporting(false);
     }
-  }, []);
+  }, [isMobile]);
 
   const fontNum = useMemo(() => parseFloat(fontSize) || 18, [fontSize]);
   const weekRange = useMemo(() => {
@@ -619,6 +651,7 @@ const ButtonSave = () => {
 
         {hiddenCapture}
         <ConfirmDialog data={confirm} onClose={() => setConfirm(null)} />
+        <ImagePreview src={previewImg} onClose={() => setPreviewImg(null)} />
       </div>
     );
   }
@@ -657,11 +690,41 @@ const ButtonSave = () => {
       </div>
       {hiddenCapture}
       <ConfirmDialog data={confirm} onClose={() => setConfirm(null)} />
+      <ImagePreview src={previewImg} onClose={() => setPreviewImg(null)} />
     </div>
   );
 };
 
 /* ── Подкомпоненты ─────────────────────────────────────────────────── */
+
+// Фолбэк сохранения PNG там, где программное скачивание не работает
+// (iOS-Safari «добавлено на экран», часть in-app браузеров).
+const ImagePreview = ({ src, onClose }) => {
+  if (!src) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center gap-3 overflow-auto bg-black/85 p-4"
+      onClick={onClose}
+    >
+      <p className="ui-font text-center text-sm text-white">
+        Нажмите и удерживайте изображение → «Сохранить в Фото»
+      </p>
+      <img
+        src={src}
+        alt="Расписание на неделю"
+        className="h-auto w-full max-w-[520px] rounded-lg bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+      <button
+        type="button"
+        className="ui-font rounded-full bg-white/90 px-6 py-2 text-sm font-medium"
+        onClick={onClose}
+      >
+        Закрыть
+      </button>
+    </div>
+  );
+};
 
 const ConfirmDialog = ({ data, onClose }) => {
   if (!data) return null;
