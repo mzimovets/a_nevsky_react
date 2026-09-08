@@ -16,10 +16,18 @@ import {
 } from "./icons";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
+import parse from "html-react-parser";
 import { Schedule, defaultHeading } from "./Schedule";
 import Tiptap from "./Tiptap.tsx";
 import { markupToHtml } from "../lib/markup";
 import { IconTrash } from "./icons";
+
+// value → HTML для показа без редактора (read-only режим)
+const BLOCK_RE = /^\s*<(p|div|ul|ol|h[1-6]|br)[\s>/]/i;
+const staticHtml = (value) => {
+  const html = markupToHtml(value || "");
+  return BLOCK_RE.test(html) ? html : `<p>${html || "&nbsp;"}</p>`;
+};
 
 const SCHEDULE_WIDTH = 911;
 const SCHEDULE_HEIGHT = 1288.414;
@@ -404,8 +412,13 @@ const ButtonSave = () => {
   }, [scheduleElements]);
 
   // предзаполнить / сбросить / размер шрифта — только в режиме правки
-  // (на мобильном форма всегда редактируется)
-  const showEditTools = isEditing || isMobile;
+  const showEditTools = isEditing;
+
+  // на мобильном «Редактировать» открывает форму (вкладка «Расписание»)
+  const onMobileEditToggle = () => {
+    if (!isEditing) setMobileView("form");
+    toggleEdit();
+  };
 
   /* ── Панель управления ─────────────────────────────────────────────── */
   const controls = (
@@ -456,108 +469,136 @@ const ButtonSave = () => {
 
       <DocxDrop onFile={uploadDocx} />
 
-      <Button
-        variant="primary"
-        size="sm"
-        fullWidth
-        onPress={exportPoster}
-        isDisabled={isExporting}
-        className="bg-brand text-white"
-      >
-        {isExporting ? <Spinner size="sm" /> : <IconDownload size={16} />} Скачать
-      </Button>
+      {/* на мобильном «Скачать» живёт в нижней плашке */}
+      {!isMobile && (
+        <Button
+          variant="primary"
+          size="sm"
+          fullWidth
+          onPress={exportPoster}
+          isDisabled={isExporting}
+          className="bg-brand text-white"
+        >
+          {isExporting ? <Spinner size="sm" /> : <IconDownload size={16} />} Скачать
+        </Button>
+      )}
     </div>
   );
 
-  /* ── Мобильная форма-список по дням (WYSIWYG) ──────────────────────── */
-  const mobileForm = (
-    <div className="flex flex-col gap-3 pb-28">
-      {scheduleElements.map((el, i) => (
-        <Card key={el.id || i} className="p-3">
-          <Card.Content className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 border-b border-line pb-2">
-              <div className="form-heading min-w-0 flex-1 font-pompadur text-lg">
-                <Tiptap
-                  isEditable
-                  content={`<p>${markupToHtml(
-                    el.heading != null && el.heading !== ""
-                      ? el.heading
-                      : defaultHeading(el)
-                  )}</p>`}
-                  onChange={(v) => updateField(el.id, "heading", v)}
-                />
-              </div>
-              <div className="flex shrink-0 flex-col items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  isIconOnly
-                  className="text-sacred"
-                  title="Удалить день"
-                  aria-label="Удалить день"
-                  isDisabled={scheduleElements.length <= 1}
-                  onPress={() => deleteDay(el.id)}
-                >
-                  <IconTrash size={18} />
-                </Button>
-                {i === 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    isIconOnly
-                    className="text-brand"
-                    title="Добавить день сверху (на прошлой неделе)"
-                    aria-label="Добавить день сверху"
-                    onPress={addDayBefore}
-                  >
-                    <IconPlus size={18} />
-                  </Button>
+  /* ── Мобильная форма-список по дням ────────────────────────────────── */
+  const renderMobileForm = (editable) => (
+    <div className="flex flex-col gap-3">
+      {scheduleElements.map((el, i) => {
+        const headingValue =
+          el.heading != null && el.heading !== ""
+            ? el.heading
+            : defaultHeading(el);
+        return (
+          <Card key={el.id || i} className="p-3">
+            <Card.Content className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 border-b border-line pb-2">
+                <div className="form-heading min-w-0 flex-1 font-pompadur text-lg">
+                  {editable ? (
+                    <Tiptap
+                      isEditable
+                      content={`<p>${markupToHtml(headingValue)}</p>`}
+                      onChange={(v) => updateField(el.id, "heading", v)}
+                    />
+                  ) : (
+                    <div className="tiptap ProseMirror">
+                      {parse(staticHtml(headingValue))}
+                    </div>
+                  )}
+                </div>
+                {editable && (
+                  <div className="flex shrink-0 flex-col items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      isIconOnly
+                      className="text-sacred"
+                      title="Удалить день"
+                      aria-label="Удалить день"
+                      isDisabled={scheduleElements.length <= 1}
+                      onPress={() => deleteDay(el.id)}
+                    >
+                      <IconTrash size={18} />
+                    </Button>
+                    {i === 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        isIconOnly
+                        className="text-brand"
+                        title="Добавить день сверху (на прошлой неделе)"
+                        aria-label="Добавить день сверху"
+                        onPress={addDayBefore}
+                      >
+                        <IconPlus size={18} />
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
-            <RichField
-              label="Время богослужений"
-              value={el.prayerTimes}
-              onChange={(v) => updateField(el.id, "prayerTimes", v)}
-            />
-            <RichField
-              label="Святые дня"
-              value={el.saintsOfDay}
-              onChange={(v) => updateField(el.id, "saintsOfDay", v)}
-            />
-          </Card.Content>
-        </Card>
-      ))}
-      <Button variant="outline" fullWidth onPress={addDay}>
-        + Добавить день
-      </Button>
+              <RichField
+                label="Время богослужений"
+                value={el.prayerTimes}
+                editable={editable}
+                onChange={(v) => updateField(el.id, "prayerTimes", v)}
+              />
+              <RichField
+                label="Святые дня"
+                value={el.saintsOfDay}
+                editable={editable}
+                onChange={(v) => updateField(el.id, "saintsOfDay", v)}
+              />
+            </Card.Content>
+          </Card>
+        );
+      })}
+      {editable && (
+        <Button variant="outline" fullWidth onPress={addDay}>
+          + Добавить день
+        </Button>
+      )}
     </div>
   );
 
   /* ── Постер (натуральные 911px), масштаб только для показа ───────────── */
-  const posterView = (scaleToFit) => (
+  // Обёртка занимает РЕАЛЬНЫЙ размер после масштаба, поэтому прокрутка
+  // ограничена самим постером — нет «пустых» полей по бокам и снизу.
+  const posterView = (scaleToFit, maxH) => (
     <div
-      className="w-full overflow-auto p-6"
-      style={{ touchAction: "pan-x pan-y pinch-zoom" }}
+      className={`w-full overflow-auto ${maxH ? "p-3" : "p-6"}`}
+      style={{ touchAction: "pan-x pan-y pinch-zoom", maxHeight: maxH }}
     >
       <div
+        className="mx-auto"
         style={{
-          width: SCHEDULE_WIDTH,
-          transform: `scale(${scaleToFit})`,
-          transformOrigin: "top left",
+          width: SCHEDULE_WIDTH * scaleToFit,
+          height: SCHEDULE_HEIGHT * scaleToFit,
           boxShadow: "0 0 16px #333",
         }}
       >
-        <Schedule
-          fontSize={fontSize}
-          scheduleElements={scheduleElements}
-          setScheduleElements={setScheduleElements}
-          buttonEditState={buttonEditState}
-          editable={!isMobile && isEditing}
-          onDeleteDay={deleteDay}
-          onAddDay={addDay}
-          onAddDayBefore={addDayBefore}
-        />
+        <div
+          style={{
+            width: SCHEDULE_WIDTH,
+            height: SCHEDULE_HEIGHT,
+            transform: `scale(${scaleToFit})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <Schedule
+            fontSize={fontSize}
+            scheduleElements={scheduleElements}
+            setScheduleElements={setScheduleElements}
+            buttonEditState={buttonEditState}
+            editable={!isMobile && isEditing}
+            onDeleteDay={deleteDay}
+            onAddDay={addDay}
+            onAddDayBefore={addDayBefore}
+          />
+        </div>
       </div>
     </div>
   );
@@ -590,23 +631,16 @@ const ButtonSave = () => {
   if (isMobile) {
     const fitScale = Math.min(1, (window.innerWidth - 24) / SCHEDULE_WIDTH) * zoom;
     return (
-      <div className="min-h-screen bg-paper px-3 pt-3">
-        <SegTabs
-          value={mobileView}
-          onChange={setMobileView}
-          tabs={[
-            { id: "form", label: "Расписание" },
-            { id: "poster", label: "Постер" },
-          ]}
-        />
-
+      <div className="min-h-screen bg-paper px-3 pb-44 pt-3">
         {mobileView === "form" ? (
-          <div className="mt-3">
-            <Card className="mb-3 p-3 font-slab">{controls}</Card>
-            {mobileForm}
+          <div>
+            {isEditing && (
+              <Card className="mb-3 p-3 font-slab">{controls}</Card>
+            )}
+            {renderMobileForm(isEditing)}
           </div>
         ) : (
-          <div className="mt-3">
+          <div>
             <div className="mb-2 flex items-center gap-2">
               <Button variant="outline" size="sm" isIconOnly onPress={() => setZoom((z) => Math.max(0.4, z - 0.15))}>
                 <IconZoomOut size={16} />
@@ -617,37 +651,58 @@ const ButtonSave = () => {
               <Button variant="outline" size="sm" isIconOnly onPress={() => setZoom((z) => Math.min(3, z + 0.15))}>
                 <IconZoomIn size={16} />
               </Button>
-              <label className="ml-2 flex flex-1 items-center gap-2 text-xs">
-                Шрифт {fontNum.toFixed(1)}
-                <input
-                  type="range"
-                  min="12"
-                  max="26"
-                  step="0.1"
-                  value={fontNum}
-                  onChange={(e) => handleFontSize(e.target.value)}
-                  className="flex-1 accent-brand"
-                />
-              </label>
+              {isEditing && (
+                <label className="ml-2 flex flex-1 items-center gap-2 text-xs">
+                  Шрифт {fontNum.toFixed(1)}
+                  <input
+                    type="range"
+                    min="12"
+                    max="26"
+                    step="0.1"
+                    value={fontNum}
+                    onChange={(e) => handleFontSize(e.target.value)}
+                    className="flex-1 accent-brand"
+                  />
+                </label>
+              )}
             </div>
-            <div style={{ height: SCHEDULE_HEIGHT * fitScale + 48 }}>
-              {posterView(fitScale)}
+            <div className="overflow-hidden rounded-xl border border-line">
+              {posterView(fitScale, "calc(100dvh - 13.5rem)")}
             </div>
           </div>
         )}
 
-        <div className="fixed inset-x-0 bottom-0 z-10 flex gap-2 border-t border-line bg-white/95 p-3 backdrop-blur">
-          <Button variant="outline" className="flex-1" onPress={save}>
-            <IconDiskette size={16} /> Сохранить
-          </Button>
-          <Button
-            variant="primary"
-            className="flex-1 bg-brand text-white"
-            onPress={exportPoster}
-            isDisabled={isExporting}
-          >
-            {isExporting ? <Spinner size="sm" /> : <IconDownload size={16} />} Скачать
-          </Button>
+        {/* нижняя плашка: вкладки + действия — закреплена и оформлена */}
+        <div className="fixed inset-x-0 bottom-0 z-20 rounded-t-2xl border border-b-0 border-line bg-white/95 px-3 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-10px_30px_rgba(30,20,15,0.16)] backdrop-blur">
+          <div className="mx-auto max-w-md">
+            <SegTabs
+              value={mobileView}
+              onChange={setMobileView}
+              tabs={[
+                { id: "form", label: "Расписание" },
+                { id: "poster", label: "Постер" },
+              ]}
+            />
+            <div className="mt-2 flex gap-2">
+              <Button
+                variant={isEditing ? "primary" : "outline"}
+                className={`flex-1 ${isEditing ? "bg-brand text-white" : ""}`}
+                onPress={onMobileEditToggle}
+              >
+                {isEditing ? <IconDiskette size={16} /> : <IconPen size={16} />}
+                {isEditing ? "Сохранить" : "Редактировать"}
+              </Button>
+              <Button
+                variant={isEditing ? "outline" : "primary"}
+                className={`flex-1 ${isEditing ? "" : "bg-brand text-white"}`}
+                onPress={exportPoster}
+                isDisabled={isExporting}
+              >
+                {isExporting ? <Spinner size="sm" /> : <IconDownload size={16} />}{" "}
+                Скачать
+              </Button>
+            </div>
+          </div>
         </div>
 
         {hiddenCapture}
@@ -761,16 +816,24 @@ const ConfirmDialog = ({ data, onClose }) => {
   );
 };
 
-// Поле с форматированием: Tiptap + всплывающая панель (BubbleMenu внутри Tiptap)
-const RichField = ({ label, value, onChange }) => (
+// Поле с форматированием: Tiptap (правка) или статичный HTML (просмотр)
+const RichField = ({ label, value, onChange, editable = true }) => (
   <label className="flex flex-col gap-1 text-sm">
     <span className="text-muted">{label}</span>
-    <div className="rich-field rounded-xl border border-line bg-white px-3 py-2 text-base leading-snug focus-within:border-brand">
-      <Tiptap
-        isEditable
-        content={`<p>${markupToHtml(value)}</p>`}
-        onChange={onChange}
-      />
+    <div
+      className={`rich-field rounded-xl border border-line px-3 py-2 text-base leading-snug ${
+        editable ? "bg-white focus-within:border-brand" : "bg-paper/60"
+      }`}
+    >
+      {editable ? (
+        <Tiptap
+          isEditable
+          content={`<p>${markupToHtml(value)}</p>`}
+          onChange={onChange}
+        />
+      ) : (
+        <div className="tiptap ProseMirror">{parse(staticHtml(value))}</div>
+      )}
     </div>
   </label>
 );
@@ -873,14 +936,16 @@ const WeekPicker = ({ rangeLabel, onPick }) => {
 };
 
 const SegTabs = ({ value, onChange, tabs }) => (
-  <div className="flex rounded-xl bg-line/40 p-1">
+  <div className="flex gap-1 rounded-2xl bg-line/50 p-1">
     {tabs.map((t) => (
       <button
         key={t.id}
         type="button"
         onClick={() => onChange(t.id)}
-        className={`flex-1 rounded-lg py-2 text-sm transition ${
-          value === t.id ? "bg-white text-foreground shadow-sm" : "text-muted"
+        className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition ${
+          value === t.id
+            ? "bg-white text-brand shadow-sm"
+            : "text-muted active:bg-white/40"
         }`}
       >
         {t.label}
