@@ -20,7 +20,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const database = new Datastore(__dirname + "/database.db");
 database.loadDatabase();
 
-app.use(express.static(__dirname + "/build"));
+app.use(
+  express.static(__dirname + "/build", {
+    setHeaders: (res, filePath) => {
+      // хэшированные ассеты Vite — кэшируем навсегда
+      if (/[\\/]assets[\\/]/.test(filePath)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      } else if (/(index\.html|sw\.js|manifest\.json)$/.test(filePath)) {
+        // оболочку и SW всегда перепроверяем — так новая версия доходит до всех
+        res.setHeader("Cache-Control", "no-cache");
+      }
+    },
+  })
+);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -33,6 +45,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.get("/", (req, res) => {
+  res.setHeader("Cache-Control", "no-cache");
   res.sendFile(__dirname + "/build" + "/index.html");
 });
 

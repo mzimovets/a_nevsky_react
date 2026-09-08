@@ -354,23 +354,12 @@ const ButtonSave = () => {
 
       const fileName = "Расписание на неделю.png";
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], fileName, { type: "image/png" });
 
-      // 1) Телефон: системный лист «Поделиться» → «Сохранить изображение / в Файлы»
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: fileName });
-          return;
-        } catch (err) {
-          if (err?.name === "AbortError") return; // пользователь закрыл шит
-          // иначе — покажем картинку для ручного сохранения (ниже)
-        }
-      }
-
-      // 2) Десктоп / Android: обычное скачивание файла
       const isStandalone =
         window.matchMedia?.("(display-mode: standalone)").matches ||
         window.navigator.standalone === true;
+
+      // 1) Компьютер — сразу скачиваем файл, без меню «Поделиться»
       if (!isMobile && !isStandalone) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -384,7 +373,19 @@ const ButtonSave = () => {
         return;
       }
 
-      // 3) Фолбэк (iOS «как приложение» и т.п.): показать картинку —
+      // 2) Телефон — системный лист «Поделиться» → «Сохранить изображение / в Файлы»
+      const file = new File([blob], fileName, { type: "image/png" });
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: fileName });
+          return;
+        } catch (err) {
+          if (err?.name === "AbortError") return; // пользователь закрыл шит
+          // иначе — покажем картинку для ручного сохранения (ниже)
+        }
+      }
+
+      // 3) Фолбэк (iOS «как приложение», старые браузеры): показать картинку —
       //    сохранить долгим нажатием
       setPreviewImg(dataUrl);
     } catch (err) {
