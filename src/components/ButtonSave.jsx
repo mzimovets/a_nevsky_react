@@ -143,6 +143,7 @@ const ButtonSave = () => {
   const [previewImg, setPreviewImg] = useState(null); // фолбэк-показ PNG для ручного сохранения
 
   const captureRef = useRef(null);
+  const posterScrollRef = useRef(null); // контейнер прокрутки постера (мобильный)
   const weekAnchorRef = useRef(null); // dayjs начала выбранной недели — для «+ день»
   const restoredRef = useRef(false); // первичная загрузка завершена
   const isEditing = buttonEditState === false;
@@ -420,6 +421,24 @@ const ButtonSave = () => {
     toggleEdit();
   };
 
+  // постер по центру области прокрутки (по горизонтали) + к началу
+  const centerPoster = useCallback((smooth = true) => {
+    const el = posterScrollRef.current;
+    if (!el) return;
+    el.scrollTo({
+      left: Math.max(0, (el.scrollWidth - el.clientWidth) / 2),
+      top: 0,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  }, []);
+
+  // при открытии вкладки «Постер» — сразу по центру
+  useEffect(() => {
+    if (!isMobile || mobileView !== "poster") return;
+    const id = requestAnimationFrame(() => centerPoster(false));
+    return () => cancelAnimationFrame(id);
+  }, [isMobile, mobileView, centerPoster]);
+
   /* ── Панель управления ─────────────────────────────────────────────── */
   const controls = (
     <div className="flex flex-col gap-3">
@@ -567,8 +586,9 @@ const ButtonSave = () => {
   /* ── Постер (натуральные 911px), масштаб только для показа ───────────── */
   // Обёртка занимает РЕАЛЬНЫЙ размер после масштаба, поэтому прокрутка
   // ограничена самим постером — нет «пустых» полей по бокам и снизу.
-  const posterView = (scaleToFit, maxH) => (
+  const posterView = (scaleToFit, maxH, scrollRef) => (
     <div
+      ref={scrollRef}
       className={`w-full overflow-auto ${maxH ? "p-3" : "p-6"}`}
       style={{ touchAction: "pan-x pan-y pinch-zoom", maxHeight: maxH }}
     >
@@ -629,7 +649,10 @@ const ButtonSave = () => {
   );
 
   if (isMobile) {
-    const fitScale = Math.min(1, (window.innerWidth - 24) / SCHEDULE_WIDTH) * zoom;
+    // -50 = внешние поля px-3 (24) + рамка (2) + внутренний p-3 постера (24):
+    // на zoom 1 постер точно вписан по ширине и стоит по центру
+    const fitScale =
+      Math.min(1, (window.innerWidth - 50) / SCHEDULE_WIDTH) * zoom;
     return (
       <div className="min-h-screen bg-paper px-3 pb-44 pt-3">
         {mobileView === "form" ? (
@@ -642,13 +665,25 @@ const ButtonSave = () => {
         ) : (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <Button variant="outline" size="sm" isIconOnly onPress={() => setZoom((z) => Math.max(0.4, z - 0.15))}>
+              <Button variant="outline" size="sm" isIconOnly aria-label="Уменьшить" onPress={() => setZoom((z) => Math.max(0.4, z - 0.15))}>
                 <IconZoomOut size={16} />
               </Button>
-              <Button variant="outline" size="sm" isIconOnly onPress={() => setZoom(1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                isIconOnly
+                aria-label="Вписать по центру"
+                title="Вписать по центру"
+                onPress={() => {
+                  setZoom(1);
+                  requestAnimationFrame(() =>
+                    requestAnimationFrame(() => centerPoster(true))
+                  );
+                }}
+              >
                 <IconFullScreen size={16} />
               </Button>
-              <Button variant="outline" size="sm" isIconOnly onPress={() => setZoom((z) => Math.min(3, z + 0.15))}>
+              <Button variant="outline" size="sm" isIconOnly aria-label="Увеличить" onPress={() => setZoom((z) => Math.min(3, z + 0.15))}>
                 <IconZoomIn size={16} />
               </Button>
               {isEditing && (
@@ -667,7 +702,7 @@ const ButtonSave = () => {
               )}
             </div>
             <div className="overflow-hidden rounded-xl border border-line">
-              {posterView(fitScale, "calc(100dvh - 13.5rem)")}
+              {posterView(fitScale, "calc(100dvh - 13.5rem)", posterScrollRef)}
             </div>
           </div>
         )}
