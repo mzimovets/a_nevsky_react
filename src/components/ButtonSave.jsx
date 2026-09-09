@@ -421,22 +421,29 @@ const ButtonSave = () => {
     toggleEdit();
   };
 
-  // постер по центру области прокрутки (по горизонтали) + к началу
-  const centerPoster = useCallback((smooth = true) => {
-    const el = posterScrollRef.current;
-    if (!el) return;
-    el.scrollTo({
-      left: Math.max(0, (el.scrollWidth - el.clientWidth) / 2),
-      top: 0,
-      behavior: smooth ? "smooth" : "auto",
-    });
+  // постер по центру области прокрутки (по горизонтали) + к началу.
+  // несколько попыток — layout/скролл могут досчитаться на след. кадрах
+  const centerPoster = useCallback(() => {
+    const apply = () => {
+      const el = posterScrollRef.current;
+      if (!el) return;
+      el.scrollLeft = Math.max(
+        0,
+        Math.round((el.scrollWidth - el.clientWidth) / 2)
+      );
+      el.scrollTop = 0;
+    };
+    apply();
+    requestAnimationFrame(apply);
+    const t = setTimeout(apply, 140);
+    return () => clearTimeout(t);
   }, []);
 
   // при открытии вкладки «Постер» — сразу по центру
   useEffect(() => {
     if (!isMobile || mobileView !== "poster") return;
-    const id = requestAnimationFrame(() => centerPoster(false));
-    return () => cancelAnimationFrame(id);
+    const cancel = centerPoster();
+    return cancel;
   }, [isMobile, mobileView, centerPoster]);
 
   /* ── Панель управления ─────────────────────────────────────────────── */
@@ -597,7 +604,7 @@ const ButtonSave = () => {
         style={{
           width: SCHEDULE_WIDTH * scaleToFit,
           height: SCHEDULE_HEIGHT * scaleToFit,
-          boxShadow: "0 0 16px #333",
+          boxShadow: "0 8px 28px -10px rgba(30, 20, 15, 0.35)",
         }}
       >
         <div
@@ -654,7 +661,15 @@ const ButtonSave = () => {
     const fitScale =
       Math.min(1, (window.innerWidth - 50) / SCHEDULE_WIDTH) * zoom;
     return (
-      <div className="min-h-screen bg-paper px-3 pb-44 pt-3">
+      <div
+        className="min-h-screen bg-paper px-3 pb-44"
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+      >
+        {/* цвет приложения за строкой статуса (iOS «как приложение») */}
+        <div
+          className="fixed inset-x-0 top-0 z-30 bg-brand"
+          style={{ height: "env(safe-area-inset-top)" }}
+        />
         {mobileView === "form" ? (
           <div>
             {isEditing && (
@@ -676,9 +691,7 @@ const ButtonSave = () => {
                 title="Вписать по центру"
                 onPress={() => {
                   setZoom(1);
-                  requestAnimationFrame(() =>
-                    requestAnimationFrame(() => centerPoster(true))
-                  );
+                  centerPoster();
                 }}
               >
                 <IconFullScreen size={16} />
@@ -701,7 +714,7 @@ const ButtonSave = () => {
                 </label>
               )}
             </div>
-            <div className="overflow-hidden rounded-xl border border-line">
+            <div className="overflow-hidden rounded-2xl border border-line bg-white">
               {posterView(fitScale, "calc(100dvh - 13.5rem)", posterScrollRef)}
             </div>
           </div>
