@@ -663,12 +663,12 @@ const ButtonSave = () => {
     return (
       <div
         className="min-h-screen bg-paper px-3 pb-44"
-        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
         {/* цвет приложения за строкой статуса (iOS «как приложение») */}
         <div
           className="fixed inset-x-0 top-0 z-30 bg-brand"
-          style={{ height: "env(safe-area-inset-top)" }}
+          style={{ height: "calc(env(safe-area-inset-top) + 1px)" }}
         />
         {mobileView === "form" ? (
           <div>

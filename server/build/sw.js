@@ -3,7 +3,7 @@
    (поэтому на всех устройствах видно одно и то же), а офлайн — из кэша.
    API (/schedule, /upload) не кэшируем вообще. */
 
-const CACHE = "nevsky-schedule-v3";
+const CACHE = "nevsky-schedule-v4";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
