@@ -146,7 +146,12 @@ const ButtonSave = () => {
   const posterScrollRef = useRef(null); // контейнер прокрутки постера (мобильный)
   const weekAnchorRef = useRef(null); // dayjs начала выбранной недели — для «+ день»
   const restoredRef = useRef(false); // первичная загрузка завершена
+  const lastSyncedAtRef = useRef(0); // updatedAt последних применённых серверных данных
   const isEditing = buttonEditState === false;
+  const isEditingRef = useRef(isEditing);
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
 
   // Первичная загрузка. Раньше локальный черновик побеждал сервер всегда —
   // если на этом устройстве когда-то остался несохранённый черновик, оно
@@ -166,6 +171,7 @@ const ButtonSave = () => {
       .then((res) => res.json())
       .then((data) => {
         const serverUpdatedAt = data?.updatedAt || 0;
+        lastSyncedAtRef.current = serverUpdatedAt;
         const draftIsNewer =
           draft?.data?.length && (draft.ts || 0) > serverUpdatedAt;
         if (draftIsNewer) {
@@ -195,6 +201,55 @@ const ButtonSave = () => {
       .finally(() => {
         restoredRef.current = true;
       });
+  }, []);
+
+  // Живое обновление уже открытых вкладок: если кто-то сохранил расписание
+  // с другого устройства, подхватываем это без перезагрузки страницы. Пока
+  // сам редактируешь — не трогаем (чтобы не затереть то, что печатается);
+  // как только выходишь из правки, следующая же проверка подтянет свежее.
+  useEffect(() => {
+    let cancelled = false;
+    let inFlight = false;
+
+    const poll = () => {
+      if (isEditingRef.current || inFlight || cancelled) return;
+      inFlight = true;
+      fetch("/schedule")
+        .then((res) => res.json())
+        .then((data) => {
+          if (cancelled) return;
+          const updatedAt = data?.updatedAt || 0;
+          if (data?.data && updatedAt > lastSyncedAtRef.current) {
+            lastSyncedAtRef.current = updatedAt;
+            setScheduleElements(data.data);
+            if (data.meta?.fontSize) setFontSize(data.meta.fontSize);
+            try {
+              localStorage.removeItem(DRAFT_KEY);
+            } catch {
+              /* ignore */
+            }
+            toast.info("Расписание обновили на другом устройстве");
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          inFlight = false;
+        });
+    };
+
+    const id = setInterval(poll, 20000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") poll();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", poll);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", poll);
+    };
   }, []);
 
   // Автосохранение черновика в localStorage при любом изменении
@@ -276,19 +331,22 @@ const ButtonSave = () => {
       // fetch не бросает на HTTP-ошибках сам по себе — без этой проверки
       // неудачное сохранение на сервере молча показывало бы «сохранено»
       if (!res.ok) throw new Error(`Сервер ответил ${res.status}`);
-      return res;
+      return res.json().catch(() => ({}));
     });
   }, [scheduleElements, fontSize]);
 
   const save = useCallback(() => {
     saveSchedule()
-      .then(() => {
+      .then((body) => {
         // сохранено на сервере — черновик больше не нужен
         try {
           localStorage.removeItem(DRAFT_KEY);
         } catch {
           /* ignore */
         }
+        // это устройство и есть источник свежих данных — не давать
+        // фоновому опросу тут же «применить» их же как будто пришли извне
+        if (body?.updatedAt) lastSyncedAtRef.current = body.updatedAt;
         toast.success("Расписание сохранено");
       })
       .catch(() => toast.danger("Не удалось сохранить"));
