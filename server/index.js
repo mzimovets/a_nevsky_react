@@ -69,19 +69,22 @@ app.get("/schedule", (req, res) => {
 });
 
 app.post("/schedule", urlencodedParser, (req, res) => {
-  database.insert({ _id: "schedule", data: req.body.data }, (err, docCount) => {
-    console.log("insering", err, docCount);
-    if (err) {
-      database.update(
-        { _id: "schedule" },
-        { $set: { data: req.body.data, meta: req.body.meta } },
-        (err, doc) => {
-          console.log(err, doc);
-          res.json({ status: "ok" });
-        }
-      );
+  // upsert одним запросом (раньше insert+fallback-update молча терял meta
+  // при самом первом сохранении) + updatedAt — чтобы клиенты знали, чей
+  // локальный черновик новее серверных данных
+  const updatedAt = Date.now();
+  database.update(
+    { _id: "schedule" },
+    { $set: { data: req.body.data, meta: req.body.meta, updatedAt } },
+    { upsert: true },
+    (err) => {
+      if (err) {
+        console.error("save schedule failed:", err);
+        return res.status(500).json({ error: "save failed" });
+      }
+      res.json({ status: "ok", updatedAt });
     }
-  });
+  );
 });
 
 const wrapOnParagraph = (text) => {

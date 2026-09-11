@@ -148,8 +148,12 @@ const ButtonSave = () => {
   const restoredRef = useRef(false); // первичная загрузка завершена
   const isEditing = buttonEditState === false;
 
-  // Первичная загрузка: сначала локальный черновик (не теряем данные при
-  // перезагрузке страницы / без сервера), затем — сохранённое на сервере.
+  // Первичная загрузка. Раньше локальный черновик побеждал сервер всегда —
+  // если на этом устройстве когда-то остался несохранённый черновик, оно
+  // никогда не видело чужие сохранения (правки с другого устройства «не
+  // доходили»). Теперь сравниваем время: черновик побеждает только если он
+  // новее последнего сохранения на сервере (data.updatedAt); иначе сервер
+  // главнее, а устаревший черновик подчищаем.
   useEffect(() => {
     let draft = null;
     try {
@@ -157,22 +161,37 @@ const ButtonSave = () => {
     } catch {
       draft = null;
     }
-    if (draft?.data?.length) {
-      setScheduleElements(draft.data);
-      if (draft.fontSize) setFontSize(draft.fontSize);
-      toast.info("Восстановлен несохранённый черновик");
-    }
 
     fetch("/schedule")
       .then((res) => res.json())
       .then((data) => {
-        // серверные данные применяем только если локального черновика нет
-        if (!draft?.data?.length) {
+        const serverUpdatedAt = data?.updatedAt || 0;
+        const draftIsNewer =
+          draft?.data?.length && (draft.ts || 0) > serverUpdatedAt;
+        if (draftIsNewer) {
+          setScheduleElements(draft.data);
+          if (draft.fontSize) setFontSize(draft.fontSize);
+          toast.info("Восстановлен несохранённый черновик");
+        } else {
           if (data?.data) setScheduleElements(data.data);
           if (data?.meta?.fontSize) setFontSize(data.meta.fontSize);
+          if (draft?.data?.length) {
+            // черновик старее того, что уже сохранено (кем-то ещё) — неактуален
+            try {
+              localStorage.removeItem(DRAFT_KEY);
+            } catch {
+              /* ignore */
+            }
+          }
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // сервер недоступен — лучше показать черновик, чем ничего
+        if (draft?.data?.length) {
+          setScheduleElements(draft.data);
+          if (draft.fontSize) setFontSize(draft.fontSize);
+        }
+      })
       .finally(() => {
         restoredRef.current = true;
       });
@@ -253,6 +272,11 @@ const ButtonSave = () => {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "*/*" },
       body: JSON.stringify({ data: scheduleElements, meta: { fontSize } }),
+    }).then((res) => {
+      // fetch не бросает на HTTP-ошибках сам по себе — без этой проверки
+      // неудачное сохранение на сервере молча показывало бы «сохранено»
+      if (!res.ok) throw new Error(`Сервер ответил ${res.status}`);
+      return res;
     });
   }, [scheduleElements, fontSize]);
 
