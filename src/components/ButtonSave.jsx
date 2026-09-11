@@ -445,6 +445,34 @@ const ButtonSave = () => {
     toggleEdit();
   };
 
+  // Прокрутка списка «Расписание» — на самой странице (document), не в
+  // отдельном контейнере. При переключении на «Постер» и обратно React
+  // перерисовывает список заново, а страница остаётся там, где её оставил
+  // короткий постер — визуально список «прыгает» наверх. Запоминаем позицию
+  // при уходе со вкладки и возвращаем её при возврате.
+  const formScrollYRef = useRef(0);
+
+  const restoreFormScroll = useCallback(() => {
+    const y = formScrollYRef.current;
+    const apply = () => window.scrollTo(0, y);
+    apply();
+    requestAnimationFrame(apply);
+    const t = setTimeout(apply, 140);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleMobileTabChange = (next) => {
+    if (mobileView === "form" && next !== "form") {
+      formScrollYRef.current = window.scrollY;
+    }
+    setMobileView(next);
+  };
+
+  useEffect(() => {
+    if (!isMobile || mobileView !== "form") return;
+    return restoreFormScroll();
+  }, [isMobile, mobileView, restoreFormScroll]);
+
   // постер по центру области прокрутки (по горизонтали) + к началу.
   // несколько попыток — layout/скролл могут досчитаться на след. кадрах
   const centerPoster = useCallback(() => {
@@ -749,7 +777,7 @@ const ButtonSave = () => {
           <div className="mx-auto max-w-md">
             <SegTabs
               value={mobileView}
-              onChange={setMobileView}
+              onChange={handleMobileTabChange}
               tabs={[
                 { id: "form", label: "Расписание" },
                 { id: "poster", label: "Постер" },
