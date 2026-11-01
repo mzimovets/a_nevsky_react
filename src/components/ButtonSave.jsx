@@ -13,6 +13,7 @@ import {
   IconFullScreen,
   IconCalendar,
   IconPlus,
+  IconGlobe,
 } from "./icons";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -350,6 +351,41 @@ const ButtonSave = () => {
         toast.success("Расписание сохранено");
       })
       .catch(() => toast.danger("Не удалось сохранить"));
+  }, [saveSchedule]);
+
+  // ── Публикация на сайт собора ─────────────────────────────────────
+  const [pub, setPub] = useState({ state: "idle", at: null, configured: true }); // idle|sending|ok|error
+  useEffect(() => {
+    fetch("/publish-status")
+      .then((r) => r.json())
+      .then((d) => setPub((p) => ({ ...p, at: d.publishedAt, configured: d.configured })))
+      .catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (pub.state !== "ok") return;
+    const t = setTimeout(() => setPub((p) => (p.state === "ok" ? { ...p, state: "idle" } : p)), 3500);
+    return () => clearTimeout(t);
+  }, [pub.state]);
+
+  const publish = useCallback(async () => {
+    setPub((p) => ({ ...p, state: "sending" }));
+    try {
+      // сначала сохраняем то, что на экране, — публикуется всегда актуальное
+      const saved = await saveSchedule();
+      if (saved?.updatedAt) lastSyncedAtRef.current = saved.updatedAt;
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
+      const res = await fetch("/publish", { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Сервер ответил ${res.status}`);
+      setPub((p) => ({ ...p, state: "ok", at: body.publishedAt }));
+    } catch (e) {
+      setPub((p) => ({ ...p, state: "error" }));
+      toast.danger(e.message || "Не удалось опубликовать");
+    }
   }, [saveSchedule]);
 
   const toggleEdit = () => {
@@ -841,6 +877,9 @@ const ButtonSave = () => {
                 { id: "poster", label: "Постер" },
               ]}
             />
+            <div className="mt-2">
+              <PublishControl pub={pub} onPublish={publish} compact />
+            </div>
             <div className="mt-2 flex gap-2">
               <Button
                 variant={isEditing ? "primary" : "outline"}
@@ -892,6 +931,9 @@ const ButtonSave = () => {
                   {isEditing ? <IconDiskette size={16} /> : <IconPen size={16} />}
                   {isEditing ? "Сохранить" : "Редактировать"}
                 </Button>
+                <div className="mt-2">
+                  <PublishControl pub={pub} onPublish={publish} />
+                </div>
               </div>
               {controls}
             </Card.Content>
@@ -910,6 +952,60 @@ const ButtonSave = () => {
 };
 
 /* ── Подкомпоненты ─────────────────────────────────────────────────── */
+
+const formatPublishedAt = (ts) => {
+  const d = dayjs(ts).locale("ru");
+  const day = d.isSame(dayjs(), "day")
+    ? "сегодня"
+    : d.isSame(dayjs().subtract(1, "day"), "day")
+      ? "вчера"
+      : d.format("D MMMM");
+  return `${day} в ${d.format("HH:mm")}`;
+};
+
+// Кнопка «Опубликовать на сайт» + статус рядом: крутилка пока уходит →
+// зелёная галочка, когда сайт принял → время последнего обновления.
+const PublishControl = ({ pub, onPublish, compact = false }) => {
+  const sending = pub.state === "sending";
+  let status = null;
+  if (sending) {
+    status = (
+      <span className="flex items-center gap-1.5 text-brand">
+        <Spinner size="sm" /> Отправляем на сайт…
+      </span>
+    );
+  } else if (pub.state === "ok") {
+    status = (
+      <span className="flex items-center gap-1.5 font-medium text-green-600">
+        <span className="grid h-4 w-4 place-items-center rounded-full bg-green-600 text-[10px] leading-none text-white">✓</span>
+        Сайт принял
+      </span>
+    );
+  } else if (pub.state === "error") {
+    status = <span className="font-medium text-red-600">Не дошло — повторите</span>;
+  } else if (pub.at) {
+    status = <span className="text-muted">Обновлено {formatPublishedAt(pub.at)}</span>;
+  } else if (!pub.configured) {
+    status = <span className="text-muted">Адрес сайта не настроен</span>;
+  }
+  return (
+    <div className={compact ? "flex items-center gap-3" : "flex flex-col gap-2"}>
+      <Button
+        variant="outline"
+        fullWidth={!compact}
+        className={compact ? "shrink-0" : ""}
+        onPress={onPublish}
+        isDisabled={sending || !pub.configured}
+      >
+        <IconGlobe size={16} />
+        Опубликовать
+      </Button>
+      <div className="ui-font min-h-5 text-xs" aria-live="polite">
+        {status}
+      </div>
+    </div>
+  );
+};
 
 // Фолбэк сохранения PNG там, где программное скачивание не работает
 // (iOS-Safari «добавлено на экран», часть in-app браузеров).

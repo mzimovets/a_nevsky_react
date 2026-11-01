@@ -87,6 +87,48 @@ app.post("/schedule", urlencodedParser, (req, res) => {
   );
 });
 
+// ── Публикация на сайт собора ────────────────────────────────────────────
+// Кнопка «Опубликовать» шлёт сохранённое расписание на сервер сайта собора
+// (POST SOBOR_PUBLISH_URL, заголовок x-publish-key = SOBOR_PUBLISH_KEY).
+// Время последней успешной публикации храним в БД, чтобы показывать его
+// рядом с кнопкой на любом устройстве.
+const SOBOR_PUBLISH_URL = process.env.SOBOR_PUBLISH_URL || "";
+const SOBOR_PUBLISH_KEY = process.env.SOBOR_PUBLISH_KEY || "";
+
+app.get("/publish-status", (req, res) => {
+  database.findOne({ _id: "publish" }, (err, doc) => {
+    res.json({
+      configured: Boolean(SOBOR_PUBLISH_URL && SOBOR_PUBLISH_KEY),
+      publishedAt: doc?.publishedAt || null,
+    });
+  });
+});
+
+app.post("/publish", (req, res) => {
+  if (!SOBOR_PUBLISH_URL || !SOBOR_PUBLISH_KEY) {
+    return res.status(501).json({ error: "Адрес сайта собора не настроен" });
+  }
+  database.findOne({ _id: "schedule" }, async (err, doc) => {
+    if (err || !doc?.data) return res.status(400).json({ error: "Нет сохранённого расписания" });
+    try {
+      const upstream = await fetch(SOBOR_PUBLISH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-publish-key": SOBOR_PUBLISH_KEY },
+        body: JSON.stringify({ data: doc.data, meta: doc.meta, updatedAt: doc.updatedAt }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!upstream.ok) throw new Error(`сайт ответил ${upstream.status}`);
+      const publishedAt = Date.now();
+      database.update({ _id: "publish" }, { $set: { publishedAt } }, { upsert: true }, () => {
+        res.json({ status: "ok", publishedAt });
+      });
+    } catch (e) {
+      console.error("publish failed:", e.message);
+      res.status(502).json({ error: "Сайт собора не принял расписание" });
+    }
+  });
+});
+
 const wrapOnParagraph = (text) => {
   return `
   <p></p>`;

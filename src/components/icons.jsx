@@ -119,3 +119,11 @@ export const IconKnight = ({ size = 18, className, ...rest }) => (
   </svg>
 );
 
+
+export const IconGlobe = ({ size = 18, className, ...rest }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className} aria-hidden="true" {...rest}>
+    <circle cx="12" cy="12" r="9.25" />
+    <ellipse cx="12" cy="12" rx="4" ry="9.25" />
+    <path d="M2.75 12h18.5M4.2 7.2h15.6M4.2 16.8h15.6" />
+  </svg>
+);

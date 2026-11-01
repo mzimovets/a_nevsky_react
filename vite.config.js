@@ -29,6 +29,8 @@ export default defineConfig({
         bypass: (req) =>
           req.headers.accept?.includes("text/html") ? "/index.html" : null,
       },
+      "/publish": API,
+      "/publish-status": API,
       "/upload": API,
       "/uploads": API,
     },
